@@ -124,6 +124,9 @@ type Request_CheckTx struct {
 type Request_DeliverTx struct {
 	DeliverTx *RequestDeliverTx `protobuf:"bytes,19,opt,name=deliver_tx,json=deliverTx,oneof"`
 }
+type Request_DeliverMsg struct {
+	DeliverMsg *RequestDeliverMsg `protobuf:"bytes,21,opt,name=deliver_msg,json=deliverMsg,oneof"`
+}
 type Request_EndBlock struct {
 	EndBlock *RequestEndBlock `protobuf:"bytes,11,opt,name=end_block,json=endBlock,oneof"`
 }
@@ -140,6 +143,7 @@ func (*Request_Query) isRequest_Value()      {}
 func (*Request_BeginBlock) isRequest_Value() {}
 func (*Request_CheckTx) isRequest_Value()    {}
 func (*Request_DeliverTx) isRequest_Value()  {}
+func (*Request_DeliverMsg) isRequest_Value() {}
 func (*Request_EndBlock) isRequest_Value()   {}
 func (*Request_Commit) isRequest_Value()     {}
 
@@ -213,6 +217,13 @@ func (m *Request) GetDeliverTx() *RequestDeliverTx {
 	return nil
 }
 
+func (m *Request) GetDeliverMsg() *RequestDeliverMsg {
+	if x, ok := m.GetValue().(*Request_DeliverMsg); ok {
+		return x.DeliverMsg
+	}
+	return nil
+}
+
 func (m *Request) GetEndBlock() *RequestEndBlock {
 	if x, ok := m.GetValue().(*Request_EndBlock); ok {
 		return x.EndBlock
@@ -239,6 +250,7 @@ func (*Request) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error
 		(*Request_BeginBlock)(nil),
 		(*Request_CheckTx)(nil),
 		(*Request_DeliverTx)(nil),
+		(*Request_DeliverMsg)(nil),
 		(*Request_EndBlock)(nil),
 		(*Request_Commit)(nil),
 	}
@@ -291,6 +303,11 @@ func _Request_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 	case *Request_DeliverTx:
 		_ = b.EncodeVarint(19<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.DeliverTx); err != nil {
+			return err
+		}
+	case *Request_DeliverMsg:
+		_ = b.EncodeVarint(21<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.DeliverMsg); err != nil {
 			return err
 		}
 	case *Request_EndBlock:
@@ -401,6 +418,14 @@ func _Request_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer
 		err := b.DecodeMessage(msg)
 		m.Value = &Request_Commit{msg}
 		return true, err
+	case 21: // value.deliver_msg
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(RequestDeliverMsg)
+		err := b.DecodeMessage(msg)
+		m.Value = &Request_DeliverMsg{msg}
+		return true, err
 	default:
 		return false, nil
 	}
@@ -452,6 +477,11 @@ func _Request_OneofSizer(msg proto.Message) (n int) {
 		n += s
 	case *Request_DeliverTx:
 		s := proto.Size(x.DeliverTx)
+		n += 2 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *Request_DeliverMsg:
+		s := proto.Size(x.DeliverMsg)
 		n += 2 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
@@ -992,6 +1022,53 @@ func (m *RequestDeliverTx) GetTx() []byte {
 	return nil
 }
 
+type RequestDeliverMsg struct {
+	Msg                  []byte   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RequestDeliverMsg) Reset()         { *m = RequestDeliverMsg{} }
+func (m *RequestDeliverMsg) String() string { return proto.CompactTextString(m) }
+func (*RequestDeliverMsg) ProtoMessage()    {}
+func (*RequestDeliverMsg) Descriptor() ([]byte, []int) {
+	return fileDescriptor_types_a177e47fab90f91d, []int{9}
+}
+func (m *RequestDeliverMsg) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RequestDeliverMsg) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RequestDeliverMsg.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *RequestDeliverMsg) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RequestDeliverMsg.Merge(dst, src)
+}
+func (m *RequestDeliverMsg) XXX_Size() int {
+	return m.Size()
+}
+func (m *RequestDeliverMsg) XXX_DiscardUnknown() {
+	xxx_messageInfo_RequestDeliverMsg.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RequestDeliverMsg proto.InternalMessageInfo
+
+func (m *RequestDeliverMsg) GetTx() []byte {
+	if m != nil {
+		return m.Msg
+	}
+	return nil
+}
+
 type RequestEndBlock struct {
 	Height               int64    `protobuf:"varint,1,opt,name=height,proto3" json:"height,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1168,6 +1245,9 @@ type Response_CheckTx struct {
 type Response_DeliverTx struct {
 	DeliverTx *ResponseDeliverTx `protobuf:"bytes,10,opt,name=deliver_tx,json=deliverTx,oneof"`
 }
+type Response_DeliverMsg struct {
+	DeliverMsg *ResponseDeliverMsg `protobuf:"bytes,13,opt,name=deliver_msg,json=deliverMsg,oneof"`
+}
 type Response_EndBlock struct {
 	EndBlock *ResponseEndBlock `protobuf:"bytes,11,opt,name=end_block,json=endBlock,oneof"`
 }
@@ -1185,6 +1265,7 @@ func (*Response_Query) isResponse_Value()      {}
 func (*Response_BeginBlock) isResponse_Value() {}
 func (*Response_CheckTx) isResponse_Value()    {}
 func (*Response_DeliverTx) isResponse_Value()  {}
+func (*Response_DeliverMsg) isResponse_Value()  {}
 func (*Response_EndBlock) isResponse_Value()   {}
 func (*Response_Commit) isResponse_Value()     {}
 
@@ -1265,6 +1346,13 @@ func (m *Response) GetDeliverTx() *ResponseDeliverTx {
 	return nil
 }
 
+func (m *Response) GetDeliverMsg() *ResponseDeliverMsg {
+	if x, ok := m.GetValue().(*Response_DeliverMsg); ok {
+		return x.DeliverMsg
+	}
+	return nil
+}
+
 func (m *Response) GetEndBlock() *ResponseEndBlock {
 	if x, ok := m.GetValue().(*Response_EndBlock); ok {
 		return x.EndBlock
@@ -1292,6 +1380,7 @@ func (*Response) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) erro
 		(*Response_BeginBlock)(nil),
 		(*Response_CheckTx)(nil),
 		(*Response_DeliverTx)(nil),
+		(*Response_DeliverMsg)(nil),
 		(*Response_EndBlock)(nil),
 		(*Response_Commit)(nil),
 	}
@@ -1349,6 +1438,11 @@ func _Response_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
 	case *Response_DeliverTx:
 		_ = b.EncodeVarint(10<<3 | proto.WireBytes)
 		if err := b.EncodeMessage(x.DeliverTx); err != nil {
+			return err
+		}
+	case *Response_DeliverMsg:
+		_ = b.EncodeVarint(13<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.DeliverMsg); err != nil {
 			return err
 		}
 	case *Response_EndBlock:
@@ -1451,6 +1545,14 @@ func _Response_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffe
 		err := b.DecodeMessage(msg)
 		m.Value = &Response_DeliverTx{msg}
 		return true, err
+	case 13: // value.deliver_msg
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(ResponseDeliverMsg)
+		err := b.DecodeMessage(msg)
+		m.Value = &Response_DeliverMsg{msg}
+		return true, err
 	case 11: // value.end_block
 		if wire != proto.WireBytes {
 			return true, proto.ErrInternalBadWireType
@@ -1523,6 +1625,11 @@ func _Response_OneofSizer(msg proto.Message) (n int) {
 		n += s
 	case *Response_DeliverTx:
 		s := proto.Size(x.DeliverTx)
+		n += 1 // tag and wire
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *Response_DeliverMsg:
+		s := proto.Size(x.DeliverMsg)
 		n += 1 // tag and wire
 		n += proto.SizeVarint(uint64(s))
 		n += s
@@ -2235,6 +2342,94 @@ func (m *ResponseDeliverTx) GetTags() []common.KVPair {
 }
 
 func (m *ResponseDeliverTx) GetCodespace() string {
+	if m != nil {
+		return m.Codespace
+	}
+	return ""
+}
+
+type ResponseDeliverMsg struct {
+	Code                 uint32          `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	Data                 []byte          `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Log                  string          `protobuf:"bytes,3,opt,name=log,proto3" json:"log,omitempty"`
+	Info                 string          `protobuf:"bytes,4,opt,name=info,proto3" json:"info,omitempty"`
+	Tags                 []common.KVPair `protobuf:"bytes,5,rep,name=tags" json:"tags,omitempty"`
+	Codespace            string          `protobuf:"bytes,6,opt,name=codespace,proto3" json:"codespace,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *ResponseDeliverMsg) Reset()         { *m = ResponseDeliverMsg{} }
+func (m *ResponseDeliverMsg) String() string { return proto.CompactTextString(m) }
+func (*ResponseDeliverMsg) ProtoMessage()    {}
+func (*ResponseDeliverMsg) Descriptor() ([]byte, []int) {
+	return fileDescriptor_types_a177e47fab90f91d, []int{22}
+}
+func (m *ResponseDeliverMsg) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ResponseDeliverMsg) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ResponseDeliverMsg.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalTo(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (dst *ResponseDeliverMsg) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResponseDeliverMsg.Merge(dst, src)
+}
+func (m *ResponseDeliverMsg) XXX_Size() int {
+	return m.Size()
+}
+func (m *ResponseDeliverMsg) XXX_DiscardUnknown() {
+	xxx_messageInfo_ResponseDeliverMsg.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ResponseDeliverMsg proto.InternalMessageInfo
+
+func (m *ResponseDeliverMsg) GetCode() uint32 {
+	if m != nil {
+		return m.Code
+	}
+	return 0
+}
+
+func (m *ResponseDeliverMsg) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *ResponseDeliverMsg) GetLog() string {
+	if m != nil {
+		return m.Log
+	}
+	return ""
+}
+
+func (m *ResponseDeliverMsg) GetInfo() string {
+	if m != nil {
+		return m.Info
+	}
+	return ""
+}
+
+
+func (m *ResponseDeliverMsg) GetTags() []common.KVPair {
+	if m != nil {
+		return m.Tags
+	}
+	return nil
+}
+
+func (m *ResponseDeliverMsg) GetCodespace() string {
 	if m != nil {
 		return m.Codespace
 	}

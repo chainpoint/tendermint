@@ -99,6 +99,12 @@ func ToRequestDeliverTx(tx []byte) *Request {
 	}
 }
 
+func ToRequestDeliverMsg(msg []byte) *Request {
+	return &Request{
+		Value: &Request_DeliverMsg{&RequestDeliverMsg{Msg: msg}},
+	}
+}
+
 func ToRequestCheckTx(tx []byte) *Request {
 	return &Request{
 		Value: &Request_CheckTx{&RequestCheckTx{Tx: tx}},

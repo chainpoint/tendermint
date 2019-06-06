@@ -14,6 +14,7 @@ type AppConns interface {
 
 	Mempool() AppConnMempool
 	Consensus() AppConnConsensus
+	Gossip() AppConnGossip
 	Query() AppConnQuery
 }
 
@@ -32,6 +33,7 @@ type multiAppConn struct {
 
 	mempoolConn   *appConnMempool
 	consensusConn *appConnConsensus
+	gossipConn *appConnGossip
 	queryConn     *appConnQuery
 
 	clientCreator ClientCreator
@@ -54,6 +56,11 @@ func (app *multiAppConn) Mempool() AppConnMempool {
 // Returns the consensus Connection
 func (app *multiAppConn) Consensus() AppConnConsensus {
 	return app.consensusConn
+}
+
+// Returns the gossip Connection
+func (app *multiAppConn) Gossip() AppConnGossip {
+	return app.gossipConn
 }
 
 // Returns the query Connection
@@ -94,6 +101,17 @@ func (app *multiAppConn) OnStart() error {
 		return errors.Wrap(err, "Error starting ABCI client (consensus connection)")
 	}
 	app.consensusConn = NewAppConnConsensus(concli)
+
+	// gossip connection
+	gossipcli, err := app.clientCreator.NewABCIClient()
+	if err != nil {
+		return errors.Wrap(err, "Error creating ABCI client (gossip connection)")
+	}
+	gossipcli.SetLogger(app.Logger.With("module", "abci-client", "connection", "gossip"))
+	if err := gossipcli.Start(); err != nil {
+		return errors.Wrap(err, "Error starting ABCI client (gossip connection)")
+	}
+	app.gossipConn = NewAppConnGossip(gossipcli)
 
 	return nil
 }

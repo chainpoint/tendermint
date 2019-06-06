@@ -941,26 +941,26 @@ plit immutable and mutable parts of priv_validator.json
 - [tools] [\#2238](https://github.com/chainpoint/tendermint/issues/2238) Binary dependencies are now locked to a specific git commit
 
 ### BUG FIXES:
-- [\#2711](https://github.com/tendermint/tendermint/issues/2711) Validate all incoming reactor messages. Fixes various bugs due to negative ints.
-- [autofile] [\#2428](https://github.com/tendermint/tendermint/issues/2428) Group.RotateFile need call Flush() before rename (@goolAdapter)
-- [common] [\#2533](https://github.com/tendermint/tendermint/issues/2533) Fixed a bug in the `BitArray.Or` method
-- [common] [\#2506](https://github.com/tendermint/tendermint/issues/2506) Fixed a bug in the `BitArray.Sub` method (@james-ray)
-- [common] [\#2534](https://github.com/tendermint/tendermint/issues/2534) Fix `BitArray.PickRandom` to choose uniformly from true bits
-- [consensus] [\#1690](https://github.com/tendermint/tendermint/issues/1690) Wait for
+- [\#2711](https://github.com/chainpoint/tendermint/issues/2711) Validate all incoming reactor messages. Fixes various bugs due to negative ints.
+- [autofile] [\#2428](https://github.com/chainpoint/tendermint/issues/2428) Group.RotateFile need call Flush() before rename (@goolAdapter)
+- [common] [\#2533](https://github.com/chainpoint/tendermint/issues/2533) Fixed a bug in the `BitArray.Or` method
+- [common] [\#2506](https://github.com/chainpoint/tendermint/issues/2506) Fixed a bug in the `BitArray.Sub` method (@james-ray)
+- [common] [\#2534](https://github.com/chainpoint/tendermint/issues/2534) Fix `BitArray.PickRandom` to choose uniformly from true bits
+- [consensus] [\#1690](https://github.com/chainpoint/tendermint/issues/1690) Wait for
   timeoutPrecommit before starting next round
-- [consensus] [\#1745](https://github.com/tendermint/tendermint/issues/1745) Wait for
+- [consensus] [\#1745](https://github.com/chainpoint/tendermint/issues/1745) Wait for
   Proposal or timeoutProposal before entering prevote
-- [consensus] [\#2642](https://github.com/tendermint/tendermint/issues/2642) Only propose ValidBlock, not LockedBlock
-- [consensus] [\#2642](https://github.com/tendermint/tendermint/issues/2642) Initialized ValidRound and LockedRound to -1
-- [consensus] [\#1637](https://github.com/tendermint/tendermint/issues/1637) Limit the amount of evidence that can be included in a
+- [consensus] [\#2642](https://github.com/chainpoint/tendermint/issues/2642) Only propose ValidBlock, not LockedBlock
+- [consensus] [\#2642](https://github.com/chainpoint/tendermint/issues/2642) Initialized ValidRound and LockedRound to -1
+- [consensus] [\#1637](https://github.com/chainpoint/tendermint/issues/1637) Limit the amount of evidence that can be included in a
   block
-- [consensus] [\#2652](https://github.com/tendermint/tendermint/issues/2652) Ensure valid block property with faulty proposer
-- [evidence] [\#2515](https://github.com/tendermint/tendermint/issues/2515) Fix db iter leak (@goolAdapter)
-- [libs/event] [\#2518](https://github.com/tendermint/tendermint/issues/2518) Fix event concurrency flaw (@goolAdapter)
-- [node] [\#2434](https://github.com/tendermint/tendermint/issues/2434) Make node respond to signal interrupts while sleeping for genesis time
-- [state] [\#2616](https://github.com/tendermint/tendermint/issues/2616) Pass nil to NewValidatorSet() when genesis file's Validators field is nil
-- [p2p] [\#2555](https://github.com/tendermint/tendermint/issues/2555) Fix p2p switch FlushThrottle value (@goolAdapter)
-- [p2p] [\#2668](https://github.com/tendermint/tendermint/issues/2668) Reconnect to originally dialed address (not self-reported address) for persistent peers
+- [consensus] [\#2652](https://github.com/chainpoint/tendermint/issues/2652) Ensure valid block property with faulty proposer
+- [evidence] [\#2515](https://github.com/chainpoint/tendermint/issues/2515) Fix db iter leak (@goolAdapter)
+- [libs/event] [\#2518](https://github.com/chainpoint/tendermint/issues/2518) Fix event concurrency flaw (@goolAdapter)
+- [node] [\#2434](https://github.com/chainpoint/tendermint/issues/2434) Make node respond to signal interrupts while sleeping for genesis time
+- [state] [\#2616](https://github.com/chainpoint/tendermint/issues/2616) Pass nil to NewValidatorSet() when genesis file's Validators field is nil
+- [p2p] [\#2555](https://github.com/chainpoint/tendermint/issues/2555) Fix p2p switch FlushThrottle value (@goolAdapter)
+- [p2p] [\#2668](https://github.com/chainpoint/tendermint/issues/2668) Reconnect to originally dialed address (not self-reported address) for persistent peers
 
 ## v0.25.0
 
@@ -972,50 +972,50 @@ Special thanks to external contributors on this release:
 This release is mostly about the ConsensusParams - removing fields and enforcing MaxGas.
 It also addresses some issues found via security audit, removes various unused
 functions from `libs/common`, and implements
-[ADR-012](https://github.com/tendermint/tendermint/blob/develop/docs/architecture/adr-012-peer-transport.md).
+[ADR-012](https://github.com/chainpoint/tendermint/blob/develop/docs/architecture/adr-012-peer-transport.md).
 
 Friendly reminder, we have a [bug bounty program](https://hackerone.com/tendermint).
 
 BREAKING CHANGES:
 
 * CLI/RPC/Config
-  * [rpc] [\#2391](https://github.com/tendermint/tendermint/issues/2391) /status `result.node_info.other` became a map
-  * [types] [\#2364](https://github.com/tendermint/tendermint/issues/2364) Remove `TxSize` and `BlockGossip` from `ConsensusParams`
+  * [rpc] [\#2391](https://github.com/chainpoint/tendermint/issues/2391) /status `result.node_info.other` became a map
+  * [types] [\#2364](https://github.com/chainpoint/tendermint/issues/2364) Remove `TxSize` and `BlockGossip` from `ConsensusParams`
     * Maximum tx size is now set implicitly via the `BlockSize.MaxBytes`
     * The size of block parts in the consensus is now fixed to 64kB
 
 * Apps
-  * [mempool] [\#2360](https://github.com/tendermint/tendermint/issues/2360) Mempool tracks the `ResponseCheckTx.GasWanted` and
+  * [mempool] [\#2360](https://github.com/chainpoint/tendermint/issues/2360) Mempool tracks the `ResponseCheckTx.GasWanted` and
     `ConsensusParams.BlockSize.MaxGas` and enforces:
     - `GasWanted <= MaxGas` for every tx
     - `(sum of GasWanted in block) <= MaxGas` for block proposal
 
 * Go API
-  * [libs/common] [\#2431](https://github.com/tendermint/tendermint/issues/2431) Remove Word256 due to lack of use
-  * [libs/common] [\#2452](https://github.com/tendermint/tendermint/issues/2452) Remove the following functions due to lack of use:
+  * [libs/common] [\#2431](https://github.com/chainpoint/tendermint/issues/2431) Remove Word256 due to lack of use
+  * [libs/common] [\#2452](https://github.com/chainpoint/tendermint/issues/2452) Remove the following functions due to lack of use:
     * byteslice.go: cmn.IsZeros, cmn.RightPadBytes, cmn.LeftPadBytes, cmn.PrefixEndBytes
     * strings.go: cmn.IsHex, cmn.StripHex
     * int.go: Uint64Slice, all put/get int64 methods
 
 FEATURES:
-- [rpc] [\#2415](https://github.com/tendermint/tendermint/issues/2415) New `/consensus_params?height=X` endpoint to query the consensus
+- [rpc] [\#2415](https://github.com/chainpoint/tendermint/issues/2415) New `/consensus_params?height=X` endpoint to query the consensus
   params at any height (@scriptonist)
-- [types] [\#1714](https://github.com/tendermint/tendermint/issues/1714) Add Address to GenesisValidator
-- [metrics] [\#2337](https://github.com/tendermint/tendermint/issues/2337) `consensus.block_interval_metrics` is now gauge, not histogram (you will be able to see spikes, if any)
-- [libs] [\#2286](https://github.com/tendermint/tendermint/issues/2286) Panic if `autofile` or `db/fsdb` permissions change from 0600.
+- [types] [\#1714](https://github.com/chainpoint/tendermint/issues/1714) Add Address to GenesisValidator
+- [metrics] [\#2337](https://github.com/chainpoint/tendermint/issues/2337) `consensus.block_interval_metrics` is now gauge, not histogram (you will be able to see spikes, if any)
+- [libs] [\#2286](https://github.com/chainpoint/tendermint/issues/2286) Panic if `autofile` or `db/fsdb` permissions change from 0600.
 
 IMPROVEMENTS:
-- [libs/db] [\#2371](https://github.com/tendermint/tendermint/issues/2371) Output error instead of panic when the given `db_backend` is not initialised (@bradyjoestar)
-- [mempool] [\#2399](https://github.com/tendermint/tendermint/issues/2399) Make mempool cache a proper LRU (@bradyjoestar)
-- [p2p] [\#2126](https://github.com/tendermint/tendermint/issues/2126) Introduce PeerTransport interface to improve isolation of concerns
-- [libs/common] [\#2326](https://github.com/tendermint/tendermint/issues/2326) Service returns ErrNotStarted
+- [libs/db] [\#2371](https://github.com/chainpoint/tendermint/issues/2371) Output error instead of panic when the given `db_backend` is not initialised (@bradyjoestar)
+- [mempool] [\#2399](https://github.com/chainpoint/tendermint/issues/2399) Make mempool cache a proper LRU (@bradyjoestar)
+- [p2p] [\#2126](https://github.com/chainpoint/tendermint/issues/2126) Introduce PeerTransport interface to improve isolation of concerns
+- [libs/common] [\#2326](https://github.com/chainpoint/tendermint/issues/2326) Service returns ErrNotStarted
 
 BUG FIXES:
-- [node] [\#2294](https://github.com/tendermint/tendermint/issues/2294) Delay starting node until Genesis time
-- [consensus] [\#2048](https://github.com/tendermint/tendermint/issues/2048) Correct peer statistics for marking peer as good
-- [rpc] [\#2460](https://github.com/tendermint/tendermint/issues/2460) StartHTTPAndTLSServer() now passes StartTLS() errors back to the caller rather than hanging forever.
-- [p2p] [\#2047](https://github.com/tendermint/tendermint/issues/2047) Accept new connections asynchronously
-- [tm-bench] [\#2410](https://github.com/tendermint/tendermint/issues/2410) Enforce minimum transaction size (@WALL-E)
+- [node] [\#2294](https://github.com/chainpoint/tendermint/issues/2294) Delay starting node until Genesis time
+- [consensus] [\#2048](https://github.com/chainpoint/tendermint/issues/2048) Correct peer statistics for marking peer as good
+- [rpc] [\#2460](https://github.com/chainpoint/tendermint/issues/2460) StartHTTPAndTLSServer() now passes StartTLS() errors back to the caller rather than hanging forever.
+- [p2p] [\#2047](https://github.com/chainpoint/tendermint/issues/2047) Accept new connections asynchronously
+- [tm-bench] [\#2410](https://github.com/chainpoint/tendermint/issues/2410) Enforce minimum transaction size (@WALL-E)
 
 ## 0.24.0
 
@@ -1039,95 +1039,95 @@ are affected by a change.
 
 A few more breaking changes are in the works - each will come with a clear
 Architecture Decision Record (ADR) explaining the change. You can review ADRs
-[here](https://github.com/tendermint/tendermint/tree/develop/docs/architecture)
-or in the [open Pull Requests](https://github.com/tendermint/tendermint/pulls).
+[here](https://github.com/chainpoint/tendermint/tree/develop/docs/architecture)
+or in the [open Pull Requests](https://github.com/chainpoint/tendermint/pulls).
 You can also check in on the [issues marked as
-breaking](https://github.com/tendermint/tendermint/issues?q=is%3Aopen+is%3Aissue+label%3Abreaking).
+breaking](https://github.com/chainpoint/tendermint/issues?q=is%3Aopen+is%3Aissue+label%3Abreaking).
 
 BREAKING CHANGES:
 
 * CLI/RPC/Config
-  - [config] [\#2169](https://github.com/tendermint/tendermint/issues/2169) Replace MaxNumPeers with MaxNumInboundPeers and MaxNumOutboundPeers
-  - [config] [\#2300](https://github.com/tendermint/tendermint/issues/2300) Reduce default mempool size from 100k to 5k, until ABCI rechecking is implemented.
-  - [rpc] [\#1815](https://github.com/tendermint/tendermint/issues/1815) `/commit` returns a `signed_header` field instead of everything being top-level
+  - [config] [\#2169](https://github.com/chainpoint/tendermint/issues/2169) Replace MaxNumPeers with MaxNumInboundPeers and MaxNumOutboundPeers
+  - [config] [\#2300](https://github.com/chainpoint/tendermint/issues/2300) Reduce default mempool size from 100k to 5k, until ABCI rechecking is implemented.
+  - [rpc] [\#1815](https://github.com/chainpoint/tendermint/issues/1815) `/commit` returns a `signed_header` field instead of everything being top-level
 
 * Apps
   - [abci] Added address of the original proposer of the block to Header
   - [abci] Change ABCI Header to match Tendermint exactly
-  - [abci] [\#2159](https://github.com/tendermint/tendermint/issues/2159) Update use of `Validator` (see
-    [ADR-018](https://github.com/tendermint/tendermint/blob/develop/docs/architecture/adr-018-ABCI-Validators.md)):
+  - [abci] [\#2159](https://github.com/chainpoint/tendermint/issues/2159) Update use of `Validator` (see
+    [ADR-018](https://github.com/chainpoint/tendermint/blob/develop/docs/architecture/adr-018-ABCI-Validators.md)):
     - Remove PubKey from `Validator` (so it's just Address and Power)
     - Introduce `ValidatorUpdate` (with just PubKey and Power)
     - InitChain and EndBlock use ValidatorUpdate
     - Update field names and types in BeginBlock
-  - [state] [\#1815](https://github.com/tendermint/tendermint/issues/1815) Validator set changes are now delayed by one block
+  - [state] [\#1815](https://github.com/chainpoint/tendermint/issues/1815) Validator set changes are now delayed by one block
     - updates returned in ResponseEndBlock for block H will be included in RequestBeginBlock for block H+2
 
 * Go API
-  - [lite] [\#1815](https://github.com/tendermint/tendermint/issues/1815) Complete refactor of the package
-  - [node] [\#2212](https://github.com/tendermint/tendermint/issues/2212) NewNode now accepts a `*p2p.NodeKey` (@bradyjoestar)
-  - [libs/common] [\#2199](https://github.com/tendermint/tendermint/issues/2199) Remove Fmt, in favor of fmt.Sprintf
+  - [lite] [\#1815](https://github.com/chainpoint/tendermint/issues/1815) Complete refactor of the package
+  - [node] [\#2212](https://github.com/chainpoint/tendermint/issues/2212) NewNode now accepts a `*p2p.NodeKey` (@bradyjoestar)
+  - [libs/common] [\#2199](https://github.com/chainpoint/tendermint/issues/2199) Remove Fmt, in favor of fmt.Sprintf
   - [libs/common] SplitAndTrim was deleted
-  - [libs/common] [\#2274](https://github.com/tendermint/tendermint/issues/2274) Remove unused Math functions like MaxInt, MaxInt64,
+  - [libs/common] [\#2274](https://github.com/chainpoint/tendermint/issues/2274) Remove unused Math functions like MaxInt, MaxInt64,
     MinInt, MinInt64 (@Ahmah2009)
   - [libs/clist] Panics if list extends beyond MaxLength
-  - [crypto] [\#2205](https://github.com/tendermint/tendermint/issues/2205) Rename AminoRoute variables to no longer be prefixed by signature type.
+  - [crypto] [\#2205](https://github.com/chainpoint/tendermint/issues/2205) Rename AminoRoute variables to no longer be prefixed by signature type.
 
 * Blockchain Protocol
-  - [state] [\#1815](https://github.com/tendermint/tendermint/issues/1815) Validator set changes are now delayed by one block (!)
+  - [state] [\#1815](https://github.com/chainpoint/tendermint/issues/1815) Validator set changes are now delayed by one block (!)
     - Add NextValidatorSet to State, changes on-disk representation of state
-  - [state] [\#2184](https://github.com/tendermint/tendermint/issues/2184) Enforce ConsensusParams.BlockSize.MaxBytes (See
-    [ADR-020](https://github.com/tendermint/tendermint/blob/develop/docs/architecture/adr-020-block-size.md)).
+  - [state] [\#2184](https://github.com/chainpoint/tendermint/issues/2184) Enforce ConsensusParams.BlockSize.MaxBytes (See
+    [ADR-020](https://github.com/chainpoint/tendermint/blob/develop/docs/architecture/adr-020-block-size.md)).
     - Remove ConsensusParams.BlockSize.MaxTxs
     - Introduce maximum sizes for all components of a block, including ChainID
   - [types] Updates to the block Header:
-    - [\#1815](https://github.com/tendermint/tendermint/issues/1815) NextValidatorsHash - hash of the validator set for the next block,
+    - [\#1815](https://github.com/chainpoint/tendermint/issues/1815) NextValidatorsHash - hash of the validator set for the next block,
       so the current validators actually sign over the hash for the new
       validators
-    - [\#2106](https://github.com/tendermint/tendermint/issues/2106) ProposerAddress - address of the block's original proposer
-  - [consensus] [\#2203](https://github.com/tendermint/tendermint/issues/2203) Implement BFT time
+    - [\#2106](https://github.com/chainpoint/tendermint/issues/2106) ProposerAddress - address of the block's original proposer
+  - [consensus] [\#2203](https://github.com/chainpoint/tendermint/issues/2203) Implement BFT time
     - Timestamp in block must be monotonic and equal the median of timestamps in block's LastCommit
-  - [crypto] [\#2239](https://github.com/tendermint/tendermint/issues/2239) Secp256k1 signature changes (See
-    [ADR-014](https://github.com/tendermint/tendermint/blob/develop/docs/architecture/adr-014-secp-malleability.md)):
+  - [crypto] [\#2239](https://github.com/chainpoint/tendermint/issues/2239) Secp256k1 signature changes (See
+    [ADR-014](https://github.com/chainpoint/tendermint/blob/develop/docs/architecture/adr-014-secp-malleability.md)):
     - format changed from DER to `r || s`, both little endian encoded as 32 bytes.
     - malleability removed by requiring `s` to be in canonical form.
 
 * P2P Protocol
-  - [p2p] [\#2263](https://github.com/tendermint/tendermint/issues/2263) Update secret connection to use a little endian encoded nonce
-  - [blockchain] [\#2213](https://github.com/tendermint/tendermint/issues/2213) Fix Amino routes for blockchain reactor messages
+  - [p2p] [\#2263](https://github.com/chainpoint/tendermint/issues/2263) Update secret connection to use a little endian encoded nonce
+  - [blockchain] [\#2213](https://github.com/chainpoint/tendermint/issues/2213) Fix Amino routes for blockchain reactor messages
     (@peerlink)
 
 
 FEATURES:
-- [types] [\#2015](https://github.com/tendermint/tendermint/issues/2015) Allow genesis file to have 0 validators (@b00f)
+- [types] [\#2015](https://github.com/chainpoint/tendermint/issues/2015) Allow genesis file to have 0 validators (@b00f)
   - Initial validator set can be determined by the app in ResponseInitChain
-- [rpc] [\#2161](https://github.com/tendermint/tendermint/issues/2161) New event `ValidatorSetUpdates` for when the validator set changes
-- [crypto/multisig] [\#2164](https://github.com/tendermint/tendermint/issues/2164) Introduce multisig pubkey and signature format
-- [libs/db] [\#2293](https://github.com/tendermint/tendermint/issues/2293) Allow passing options through when creating instances of leveldb dbs
+- [rpc] [\#2161](https://github.com/chainpoint/tendermint/issues/2161) New event `ValidatorSetUpdates` for when the validator set changes
+- [crypto/multisig] [\#2164](https://github.com/chainpoint/tendermint/issues/2164) Introduce multisig pubkey and signature format
+- [libs/db] [\#2293](https://github.com/chainpoint/tendermint/issues/2293) Allow passing options through when creating instances of leveldb dbs
 
 IMPROVEMENTS:
 - [docs] Lint documentation with `write-good` and `stop-words`.
-- [docs] [\#2249](https://github.com/tendermint/tendermint/issues/2249) Refactor, deduplicate, and improve the ABCI docs and spec (with thanks to @ttmc).
-- [scripts] [\#2196](https://github.com/tendermint/tendermint/issues/2196) Added json2wal tool, which is supposed to help our users restore (@bradyjoestar)
+- [docs] [\#2249](https://github.com/chainpoint/tendermint/issues/2249) Refactor, deduplicate, and improve the ABCI docs and spec (with thanks to @ttmc).
+- [scripts] [\#2196](https://github.com/chainpoint/tendermint/issues/2196) Added json2wal tool, which is supposed to help our users restore (@bradyjoestar)
   corrupted WAL files and compose test WAL files (@bradyjoestar)
-- [mempool] [\#2234](https://github.com/tendermint/tendermint/issues/2234) Now stores txs by hash inside of the cache, to mitigate memory leakage
-- [mempool] [\#2166](https://github.com/tendermint/tendermint/issues/2166) Set explicit capacity for map when updating txs (@bluele)
+- [mempool] [\#2234](https://github.com/chainpoint/tendermint/issues/2234) Now stores txs by hash inside of the cache, to mitigate memory leakage
+- [mempool] [\#2166](https://github.com/chainpoint/tendermint/issues/2166) Set explicit capacity for map when updating txs (@bluele)
 
 BUG FIXES:
-- [config] [\#2284](https://github.com/tendermint/tendermint/issues/2284) Replace `db_path` with `db_dir` from automatically generated configuration files.
-- [mempool] [\#2188](https://github.com/tendermint/tendermint/issues/2188) Fix OOM issue from cache map and list getting out of sync
-- [state] [\#2051](https://github.com/tendermint/tendermint/issues/2051) KV store index supports searching by `tx.height` (@ackratos)
-- [rpc] [\#2327](https://github.com/tendermint/tendermint/issues/2327) `/dial_peers` does not try to dial existing peers
-- [node] [\#2323](https://github.com/tendermint/tendermint/issues/2323) Filter empty strings from config lists (@james-ray)
-- [abci/client] [\#2236](https://github.com/tendermint/tendermint/issues/2236) Fix closing GRPC connection (@bradyjoestar)
+- [config] [\#2284](https://github.com/chainpoint/tendermint/issues/2284) Replace `db_path` with `db_dir` from automatically generated configuration files.
+- [mempool] [\#2188](https://github.com/chainpoint/tendermint/issues/2188) Fix OOM issue from cache map and list getting out of sync
+- [state] [\#2051](https://github.com/chainpoint/tendermint/issues/2051) KV store index supports searching by `tx.height` (@ackratos)
+- [rpc] [\#2327](https://github.com/chainpoint/tendermint/issues/2327) `/dial_peers` does not try to dial existing peers
+- [node] [\#2323](https://github.com/chainpoint/tendermint/issues/2323) Filter empty strings from config lists (@james-ray)
+- [abci/client] [\#2236](https://github.com/chainpoint/tendermint/issues/2236) Fix closing GRPC connection (@bradyjoestar)
 
 ## 0.23.1
 
 *August 22nd, 2018*
 
 BUG FIXES:
-- [libs/autofile] [\#2261](https://github.com/tendermint/tendermint/issues/2261) Fix log rotation so it actually happens.
-    - Fixes issues with consensus WAL growing unbounded ala [\#2259](https://github.com/tendermint/tendermint/issues/2259)
+- [libs/autofile] [\#2261](https://github.com/chainpoint/tendermint/issues/2261) Fix log rotation so it actually happens.
+    - Fixes issues with consensus WAL growing unbounded ala [\#2259](https://github.com/chainpoint/tendermint/issues/2259)
 
 ## 0.23.0
 
@@ -1148,10 +1148,10 @@ BREAKING CHANGES:
 - [abci] Changed Validators to LastCommitInfo in RequestBeginBlock
 - [abci] Removed Fee from ResponseDeliverTx and ResponseCheckTx
 - [crypto] Switch crypto.Signature from interface to []byte for space efficiency
-  [#2128](https://github.com/tendermint/tendermint/pull/2128)
+  [#2128](https://github.com/chainpoint/tendermint/pull/2128)
     - NOTE: this means signatures no longer have the prefix bytes in Amino
       binary nor the `type` field in Amino JSON. They're just bytes.
-- [p2p] Remove salsa and ripemd primitives, in favor of using chacha as a stream cipher, and hkdf [#2054](https://github.com/tendermint/tendermint/pull/2054)
+- [p2p] Remove salsa and ripemd primitives, in favor of using chacha as a stream cipher, and hkdf [#2054](https://github.com/chainpoint/tendermint/pull/2054)
 - [tools] Removed `make ensure_deps` in favor of `make get_vendor_deps`
 - [types] CanonicalTime uses nanoseconds instead of clipping to ms
     - breaks serialization/signing of all messages with a timestamp
@@ -1163,21 +1163,21 @@ FEATURES:
 
 IMPROVEMENTS:
 - [blockchain] Improve fast-sync logic
-  [#1805](https://github.com/tendermint/tendermint/pull/1805)
+  [#1805](https://github.com/chainpoint/tendermint/pull/1805)
     - tweak params
     - only process one block at a time to avoid starving
 - [common] bit array functions which take in another parameter are now thread safe
 - [crypto] Switch hkdfchachapoly1305 to xchachapoly1305
-- [p2p] begin connecting to peers as soon a seed node provides them to you ([#2093](https://github.com/tendermint/tendermint/issues/2093))
+- [p2p] begin connecting to peers as soon a seed node provides them to you ([#2093](https://github.com/chainpoint/tendermint/issues/2093))
 
 BUG FIXES:
-- [common] Safely handle cases where atomic write files already exist [#2109](https://github.com/tendermint/tendermint/issues/2109)
+- [common] Safely handle cases where atomic write files already exist [#2109](https://github.com/chainpoint/tendermint/issues/2109)
 - [privval] fix a deadline for accepting new connections in socket private
   validator.
-- [p2p] Allow startup if a configured seed node's IP can't be resolved ([#1716](https://github.com/tendermint/tendermint/issues/1716))
-- [node] Fully exit when CTRL-C is pressed even if consensus state panics [#2072](https://github.com/tendermint/tendermint/issues/2072)
+- [p2p] Allow startup if a configured seed node's IP can't be resolved ([#1716](https://github.com/chainpoint/tendermint/issues/1716))
+- [node] Fully exit when CTRL-C is pressed even if consensus state panics [#2072](https://github.com/chainpoint/tendermint/issues/2072)
 
-[i1815]: https://github.com/tendermint/tendermint/pull/1815
+[i1815]: https://github.com/chainpoint/tendermint/pull/1815
 
 ## 0.22.8
 
@@ -1567,7 +1567,7 @@ Some of these are breaking in the RPC response, but they're really bugs!
 BREAKING:
 - [cmd] improved `testnet` command; now it can fill in `persistent_peers` for you in the config file and much more (see `tendermint testnet --help` for details)
 - [cmd] `show_node_id` now returns an error if there is no node key
-- [rpc]: changed the output format for the `/status` endpoint (see https://godoc.org/github.com/tendermint/tendermint/rpc/core#Status)
+- [rpc]: changed the output format for the `/status` endpoint (see https://godoc.org/github.com/chainpoint/tendermint/rpc/core#Status)
 
 Upgrade from go-wire to go-amino. This is a sweeping change that breaks everything that is
 serialized to disk or over the network.
@@ -1713,7 +1713,7 @@ FEATURES:
     NOTE it is currently insecure and its APIs are not yet covered by semver
 
 IMPROVEMENTS:
-- rpc/client: can act as event bus subscriber (See https://github.com/tendermint/tendermint/issues/945).
+- rpc/client: can act as event bus subscriber (See https://github.com/chainpoint/tendermint/issues/945).
 - p2p: use exponential backoff from seconds to hours when attempting to reconnect to persistent peer
 - config: moniker defaults to the machine's hostname instead of "anonymous"
 
@@ -1888,7 +1888,7 @@ Also includes the Grand Repo-Merge of 2017.
 BREAKING CHANGES:
 
 - Config and Flags:
-  - The `config` map is replaced with a [`Config` struct](https://github.com/tendermint/tendermint/blob/master/config/config.go#L11),
+  - The `config` map is replaced with a [`Config` struct](https://github.com/chainpoint/tendermint/blob/master/config/config.go#L11),
 containing substructs: `BaseConfig`, `P2PConfig`, `MempoolConfig`, `ConsensusConfig`, `RPCConfig`
   - This affects the following flags:
     - `--seeds` is now `--p2p.seeds`

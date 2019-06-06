@@ -247,6 +247,10 @@ func (cli *socketClient) DeliverTxAsync(tx []byte) *ReqRes {
 	return cli.queueRequest(types.ToRequestDeliverTx(tx))
 }
 
+func (cli *socketClient) DeliverMsgAsync(msg []byte) *ReqRes {
+	return cli.queueRequest(types.ToRequestDeliverMsg(msg))
+}
+
 func (cli *socketClient) CheckTxAsync(tx []byte) *ReqRes {
 	return cli.queueRequest(types.ToRequestCheckTx(tx))
 }
@@ -304,6 +308,12 @@ func (cli *socketClient) DeliverTxSync(tx []byte) (*types.ResponseDeliverTx, err
 	reqres := cli.queueRequest(types.ToRequestDeliverTx(tx))
 	cli.FlushSync()
 	return reqres.Response.GetDeliverTx(), cli.Error()
+}
+
+func (cli *socketClient) DeliverMsgSync(msg []byte) (*types.ResponseDeliverMsg, error) {
+	reqres := cli.queueRequest(types.ToRequestDeliverMsg(msg))
+	cli.FlushSync()
+	return reqres.Response.GetDeliverMsg(), cli.Error()
 }
 
 func (cli *socketClient) CheckTxSync(tx []byte) (*types.ResponseCheckTx, error) {

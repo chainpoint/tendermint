@@ -21,6 +21,7 @@ type Application interface {
 	InitChain(RequestInitChain) ResponseInitChain    // Initialize blockchain with validators and other info from TendermintCore
 	BeginBlock(RequestBeginBlock) ResponseBeginBlock // Signals the beginning of a block
 	DeliverTx(tx []byte) ResponseDeliverTx           // Deliver a tx for full processing
+	DeliverMsg(msg []byte) ResponseDeliverMsg
 	EndBlock(RequestEndBlock) ResponseEndBlock       // Signals the end of a block, returns changes to the validator set
 	Commit() ResponseCommit                          // Commit the state and return the application Merkle root hash
 }
@@ -47,6 +48,10 @@ func (BaseApplication) SetOption(req RequestSetOption) ResponseSetOption {
 
 func (BaseApplication) DeliverTx(tx []byte) ResponseDeliverTx {
 	return ResponseDeliverTx{Code: CodeTypeOK}
+}
+
+func (BaseApplication) DeliverMsg(tx []byte) ResponseDeliverMsg {
+	return ResponseDeliverMsg{Code: CodeTypeOK}
 }
 
 func (BaseApplication) CheckTx(tx []byte) ResponseCheckTx {
@@ -104,6 +109,11 @@ func (app *GRPCApplication) SetOption(ctx context.Context, req *RequestSetOption
 
 func (app *GRPCApplication) DeliverTx(ctx context.Context, req *RequestDeliverTx) (*ResponseDeliverTx, error) {
 	res := app.app.DeliverTx(req.Tx)
+	return &res, nil
+}
+
+func (app *GRPCApplication) DeliverMsg(ctx context.Context, req *RequestDeliverMsg) (*ResponseDeliverMsg, error) {
+	res := app.app.DeliverMsg(req.Msg)
 	return &res, nil
 }
 

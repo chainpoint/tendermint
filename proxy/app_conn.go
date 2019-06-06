@@ -30,6 +30,16 @@ type AppConnMempool interface {
 	FlushSync() error
 }
 
+type AppConnGossip interface {
+	SetResponseCallback(abcicli.Callback)
+	Error() error
+
+	DeliverMsgAsync(msg []byte) *abcicli.ReqRes
+
+	FlushAsync() *abcicli.ReqRes
+	FlushSync() error
+}
+
 type AppConnQuery interface {
 	Error() error
 
@@ -112,6 +122,39 @@ func (app *appConnMempool) FlushSync() error {
 
 func (app *appConnMempool) CheckTxAsync(tx []byte) *abcicli.ReqRes {
 	return app.appConn.CheckTxAsync(tx)
+}
+
+//------------------------------------------------
+// Implements AppConnGossip (subset of abcicli.Client)
+
+type appConnGossip struct {
+	appConn abcicli.Client
+}
+
+func NewAppConnGossip(appConn abcicli.Client) *appConnGossip {
+	return &appConnGossip{
+		appConn: appConn,
+	}
+}
+
+func (app *appConnGossip) SetResponseCallback(cb abcicli.Callback) {
+	app.appConn.SetResponseCallback(cb)
+}
+
+func (app *appConnGossip) Error() error {
+	return app.appConn.Error()
+}
+
+func (app *appConnGossip) FlushAsync() *abcicli.ReqRes {
+	return app.appConn.FlushAsync()
+}
+
+func (app *appConnGossip) FlushSync() error {
+	return app.appConn.FlushSync()
+}
+
+func (app *appConnGossip) DeliverMsgAsync(msg []byte) *abcicli.ReqRes {
+	return app.appConn.DeliverMsgAsync(msg)
 }
 
 //------------------------------------------------
