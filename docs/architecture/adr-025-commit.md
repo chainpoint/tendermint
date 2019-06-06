@@ -21,9 +21,9 @@ type Vote struct {
 }
 ```
 References:
-[#1648](https://github.com/tendermint/tendermint/issues/1648)
-[#2179](https://github.com/tendermint/tendermint/issues/2179)
-[#2226](https://github.com/tendermint/tendermint/issues/2226)
+[#1648](https://github.com/chainpoint/tendermint/issues/1648)
+[#2179](https://github.com/chainpoint/tendermint/issues/2179)
+[#2226](https://github.com/chainpoint/tendermint/issues/2226)
 
 ## Proposed Solution
 We can improve efficiency by replacing the usage of the `Vote` struct with a subset of each vote, and by storing the constant values (`Height`, `Round`, `BlockID`) in the Commit itself.

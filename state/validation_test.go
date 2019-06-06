@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/crypto/tmhash"
-	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/crypto/ed25519"
+	"github.com/chainpoint/tendermint/crypto/tmhash"
+	"github.com/chainpoint/tendermint/libs/log"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // TODO(#2589):

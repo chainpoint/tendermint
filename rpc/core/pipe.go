@@ -3,17 +3,17 @@ package core
 import (
 	"time"
 
-	cfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/consensus"
-	"github.com/tendermint/tendermint/crypto"
-	dbm "github.com/tendermint/tendermint/libs/db"
-	"github.com/tendermint/tendermint/libs/log"
-	mempl "github.com/tendermint/tendermint/mempool"
-	"github.com/tendermint/tendermint/p2p"
-	"github.com/tendermint/tendermint/proxy"
-	sm "github.com/tendermint/tendermint/state"
-	"github.com/tendermint/tendermint/state/txindex"
-	"github.com/tendermint/tendermint/types"
+	cfg "github.com/chainpoint/tendermint/config"
+	"github.com/chainpoint/tendermint/consensus"
+	"github.com/chainpoint/tendermint/crypto"
+	dbm "github.com/chainpoint/tendermint/libs/db"
+	"github.com/chainpoint/tendermint/libs/log"
+	mempl "github.com/chainpoint/tendermint/mempool"
+	"github.com/chainpoint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/proxy"
+	sm "github.com/chainpoint/tendermint/state"
+	"github.com/chainpoint/tendermint/state/txindex"
+	"github.com/chainpoint/tendermint/types"
 )
 
 const (

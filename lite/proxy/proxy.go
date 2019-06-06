@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	amino "github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/libs/log"
+	"github.com/chainpoint/tendermint/libs/log"
 
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	"github.com/tendermint/tendermint/rpc/core"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpcserver "github.com/tendermint/tendermint/rpc/lib/server"
+	rpcclient "github.com/chainpoint/tendermint/rpc/client"
+	"github.com/chainpoint/tendermint/rpc/core"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	rpcserver "github.com/chainpoint/tendermint/rpc/lib/server"
 )
 
 const (

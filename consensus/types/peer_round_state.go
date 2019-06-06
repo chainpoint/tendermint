@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/types"
+	cmn "github.com/chainpoint/tendermint/libs/common"
+	"github.com/chainpoint/tendermint/types"
 )
 
 //-----------------------------------------------------------------------------

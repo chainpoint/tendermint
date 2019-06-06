@@ -6,8 +6,8 @@ The documentation for Tendermint Core is hosted at:
 - https://tendermint-staging.interblock.io/docs/
 
 built from the files in this (`/docs`) directory for
-[master](https://github.com/tendermint/tendermint/tree/master/docs)
-and [develop](https://github.com/tendermint/tendermint/tree/develop/docs),
+[master](https://github.com/chainpoint/tendermint/tree/master/docs)
+and [develop](https://github.com/chainpoint/tendermint/tree/develop/docs),
 respectively.
 
 ## How It Works

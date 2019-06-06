@@ -6,15 +6,15 @@ import (
 
 	"github.com/pkg/errors"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/libs/log"
-	tmpubsub "github.com/tendermint/tendermint/libs/pubsub"
-	tmquery "github.com/tendermint/tendermint/libs/pubsub/query"
-	nm "github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/rpc/core"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
-	"github.com/tendermint/tendermint/types"
+	cmn "github.com/chainpoint/tendermint/libs/common"
+	"github.com/chainpoint/tendermint/libs/log"
+	tmpubsub "github.com/chainpoint/tendermint/libs/pubsub"
+	tmquery "github.com/chainpoint/tendermint/libs/pubsub/query"
+	nm "github.com/chainpoint/tendermint/node"
+	"github.com/chainpoint/tendermint/rpc/core"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	rpctypes "github.com/chainpoint/tendermint/rpc/lib/types"
+	"github.com/chainpoint/tendermint/types"
 )
 
 /*

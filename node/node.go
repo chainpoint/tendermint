@@ -17,32 +17,32 @@ import (
 	"github.com/rs/cors"
 
 	amino "github.com/tendermint/go-amino"
-	abci "github.com/tendermint/tendermint/abci/types"
-	bc "github.com/tendermint/tendermint/blockchain"
-	cfg "github.com/tendermint/tendermint/config"
-	cs "github.com/tendermint/tendermint/consensus"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/evidence"
-	cmn "github.com/tendermint/tendermint/libs/common"
-	dbm "github.com/tendermint/tendermint/libs/db"
-	"github.com/tendermint/tendermint/libs/log"
-	tmpubsub "github.com/tendermint/tendermint/libs/pubsub"
-	mempl "github.com/tendermint/tendermint/mempool"
-	"github.com/tendermint/tendermint/p2p"
-	"github.com/tendermint/tendermint/p2p/pex"
-	"github.com/tendermint/tendermint/privval"
-	"github.com/tendermint/tendermint/proxy"
-	rpccore "github.com/tendermint/tendermint/rpc/core"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	grpccore "github.com/tendermint/tendermint/rpc/grpc"
-	rpcserver "github.com/tendermint/tendermint/rpc/lib/server"
-	sm "github.com/tendermint/tendermint/state"
-	"github.com/tendermint/tendermint/state/txindex"
-	"github.com/tendermint/tendermint/state/txindex/kv"
-	"github.com/tendermint/tendermint/state/txindex/null"
-	"github.com/tendermint/tendermint/types"
-	tmtime "github.com/tendermint/tendermint/types/time"
-	"github.com/tendermint/tendermint/version"
+	abci "github.com/chainpoint/tendermint/abci/types"
+	bc "github.com/chainpoint/tendermint/blockchain"
+	cfg "github.com/chainpoint/tendermint/config"
+	cs "github.com/chainpoint/tendermint/consensus"
+	"github.com/chainpoint/tendermint/crypto/ed25519"
+	"github.com/chainpoint/tendermint/evidence"
+	cmn "github.com/chainpoint/tendermint/libs/common"
+	dbm "github.com/chainpoint/tendermint/libs/db"
+	"github.com/chainpoint/tendermint/libs/log"
+	tmpubsub "github.com/chainpoint/tendermint/libs/pubsub"
+	mempl "github.com/chainpoint/tendermint/mempool"
+	"github.com/chainpoint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/p2p/pex"
+	"github.com/chainpoint/tendermint/privval"
+	"github.com/chainpoint/tendermint/proxy"
+	rpccore "github.com/chainpoint/tendermint/rpc/core"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	grpccore "github.com/chainpoint/tendermint/rpc/grpc"
+	rpcserver "github.com/chainpoint/tendermint/rpc/lib/server"
+	sm "github.com/chainpoint/tendermint/state"
+	"github.com/chainpoint/tendermint/state/txindex"
+	"github.com/chainpoint/tendermint/state/txindex/kv"
+	"github.com/chainpoint/tendermint/state/txindex/null"
+	"github.com/chainpoint/tendermint/types"
+	tmtime "github.com/chainpoint/tendermint/types/time"
+	"github.com/chainpoint/tendermint/version"
 )
 
 //------------------------------------------------------------------------------
@@ -502,7 +502,7 @@ func NewNode(config *cfg.Config,
 				// blocks assuming 10s blocks ~ 28 hours.
 				// TODO (melekes): make it dynamic based on the actual block latencies
 				// from the live network.
-				// https://github.com/tendermint/tendermint/issues/3523
+				// https://github.com/chainpoint/tendermint/issues/3523
 				SeedDisconnectWaitPeriod: 28 * time.Hour,
 			})
 		pexReactor.SetLogger(logger.With("module", "pex"))
@@ -699,7 +699,7 @@ func (n *Node) startRPC() ([]net.Listener, error) {
 		config.MaxOpenConnections = n.config.RPC.MaxOpenConnections
 		// If necessary adjust global WriteTimeout to ensure it's greater than
 		// TimeoutBroadcastTxCommit.
-		// See https://github.com/tendermint/tendermint/issues/3435
+		// See https://github.com/chainpoint/tendermint/issues/3435
 		if config.WriteTimeout <= n.config.RPC.TimeoutBroadcastTxCommit {
 			config.WriteTimeout = n.config.RPC.TimeoutBroadcastTxCommit + 1*time.Second
 		}

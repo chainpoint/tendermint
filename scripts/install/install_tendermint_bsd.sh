@@ -14,7 +14,7 @@
 
 # change this to a specific release or branch
 set BRANCH=master
-set REPO=github.com/tendermint/tendermint
+set REPO=github.com/chainpoint/tendermint
 
 set GO_VERSION=1.12
 

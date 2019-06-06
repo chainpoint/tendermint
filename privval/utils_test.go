@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	cmn "github.com/chainpoint/tendermint/libs/common"
 )
 
 func TestIsConnTimeoutForNonTimeoutErrors(t *testing.T) {

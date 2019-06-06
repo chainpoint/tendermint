@@ -8,7 +8,7 @@ testnets on those servers.
 ## Install
 
 NOTE: see the [integration bash
-script](https://github.com/tendermint/tendermint/blob/develop/networks/remote/integration.sh)
+script](https://github.com/chainpoint/tendermint/blob/develop/networks/remote/integration.sh)
 that can be run on a fresh DO droplet and will automatically spin up a 4
 node testnet. The script more or less does everything described below.
 
@@ -35,7 +35,7 @@ This step will create four Digital Ocean droplets. First, go to the
 correct directory:
 
 ```
-cd $GOPATH/src/github.com/tendermint/tendermint/networks/remote/terraform
+cd $GOPATH/src/github.com/chainpoint/tendermint/networks/remote/terraform
 ```
 
 then:
@@ -52,10 +52,10 @@ With the droplets created and running, let's setup Ansible.
 ## Ansible
 
 The playbooks in [the ansible
-directory](https://github.com/tendermint/tendermint/tree/master/networks/remote/ansible)
+directory](https://github.com/chainpoint/tendermint/tree/master/networks/remote/ansible)
 run ansible roles to configure the sentry node architecture. You must
 switch to this directory to run ansible
-(`cd $GOPATH/src/github.com/tendermint/tendermint/networks/remote/ansible`).
+(`cd $GOPATH/src/github.com/chainpoint/tendermint/networks/remote/ansible`).
 
 There are several roles that are self-explanatory:
 
@@ -64,14 +64,14 @@ First, we configure our droplets by specifying the paths for tendermint
 number of directories named `node0, node1, ...` and so on (equal to the
 number of droplets created). For this example, we use pre-created files
 from [this
-directory](https://github.com/tendermint/tendermint/tree/master/docs/examples).
+directory](https://github.com/chainpoint/tendermint/tree/master/docs/examples).
 To create your own files, use either the `tendermint testnet` command or
 review [manual deployments](./deploy-testnets.md).
 
 Here's the command to run:
 
 ```
-ansible-playbook -i inventory/digital_ocean.py -l sentrynet config.yml -e BINARY=$GOPATH/src/github.com/tendermint/tendermint/build/tendermint -e CONFIGDIR=$GOPATH/src/github.com/tendermint/tendermint/docs/examples
+ansible-playbook -i inventory/digital_ocean.py -l sentrynet config.yml -e BINARY=$GOPATH/src/github.com/chainpoint/tendermint/build/tendermint -e CONFIGDIR=$GOPATH/src/github.com/chainpoint/tendermint/docs/examples
 ```
 
 Voila! All your droplets now have the `tendermint` binary and required

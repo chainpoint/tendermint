@@ -17,15 +17,15 @@ import (
 
 	amino "github.com/tendermint/go-amino"
 
-	"github.com/tendermint/tendermint/abci/example/counter"
-	"github.com/tendermint/tendermint/abci/example/kvstore"
-	abciserver "github.com/tendermint/tendermint/abci/server"
-	abci "github.com/tendermint/tendermint/abci/types"
-	cfg "github.com/tendermint/tendermint/config"
-	cmn "github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/abci/example/counter"
+	"github.com/chainpoint/tendermint/abci/example/kvstore"
+	abciserver "github.com/chainpoint/tendermint/abci/server"
+	abci "github.com/chainpoint/tendermint/abci/types"
+	cfg "github.com/chainpoint/tendermint/config"
+	cmn "github.com/chainpoint/tendermint/libs/common"
+	"github.com/chainpoint/tendermint/libs/log"
+	"github.com/chainpoint/tendermint/proxy"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // A cleanupFunc cleans up any config / test files created for a particular
@@ -513,7 +513,7 @@ func TestMempoolTxsBytes(t *testing.T) {
 }
 
 // This will non-deterministically catch some concurrency failures like
-// https://github.com/tendermint/tendermint/issues/3509
+// https://github.com/chainpoint/tendermint/issues/3509
 // TODO: all of the tests should probably also run using the remote proxy app
 // since otherwise we're not actually testing the concurrency of the mempool here!
 func TestMempoolRemoteAppConcurrency(t *testing.T) {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
-	tmtime "github.com/tendermint/tendermint/types/time"
+	cmn "github.com/chainpoint/tendermint/libs/common"
+	tmtime "github.com/chainpoint/tendermint/types/time"
 )
 
 var (

@@ -13,16 +13,16 @@ RUN apk add --no-cache bash curl jq
 
 ENV GOPATH /go
 ENV PATH "$PATH:/go/bin"
-RUN mkdir -p /go/src/github.com/tendermint/tendermint && \
+RUN mkdir -p /go/src/github.com/chainpoint/tendermint && \
     apk add --no-cache go build-base git && \
-    cd /go/src/github.com/tendermint/tendermint && \
-    git clone https://github.com/tendermint/tendermint . && \
+    cd /go/src/github.com/chainpoint/tendermint && \
+    git clone https://github.com/chainpoint/tendermint . && \
     git checkout develop && \
     make get_tools && \
     make get_vendor_deps && \
     make install && \
     cd - && \
-    rm -rf /go/src/github.com/tendermint/tendermint && \
+    rm -rf /go/src/github.com/chainpoint/tendermint && \
     apk del go build-base git
 
 VOLUME $DATA_ROOT

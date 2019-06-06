@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	cmn "github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/p2p"
-	"github.com/tendermint/tendermint/types"
+	cmn "github.com/chainpoint/tendermint/libs/common"
+	"github.com/chainpoint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/types"
 )
 
 //----------------------------------------------

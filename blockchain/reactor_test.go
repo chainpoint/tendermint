@@ -8,16 +8,16 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	cfg "github.com/tendermint/tendermint/config"
-	cmn "github.com/tendermint/tendermint/libs/common"
-	dbm "github.com/tendermint/tendermint/libs/db"
-	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/p2p"
-	"github.com/tendermint/tendermint/proxy"
-	sm "github.com/tendermint/tendermint/state"
-	"github.com/tendermint/tendermint/types"
-	tmtime "github.com/tendermint/tendermint/types/time"
+	abci "github.com/chainpoint/tendermint/abci/types"
+	cfg "github.com/chainpoint/tendermint/config"
+	cmn "github.com/chainpoint/tendermint/libs/common"
+	dbm "github.com/chainpoint/tendermint/libs/db"
+	"github.com/chainpoint/tendermint/libs/log"
+	"github.com/chainpoint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/proxy"
+	sm "github.com/chainpoint/tendermint/state"
+	"github.com/chainpoint/tendermint/types"
+	tmtime "github.com/chainpoint/tendermint/types/time"
 )
 
 var config *cfg.Config

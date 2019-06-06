@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	cfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/cli"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	cfg "github.com/chainpoint/tendermint/config"
+	"github.com/chainpoint/tendermint/libs/cli"
+	cmn "github.com/chainpoint/tendermint/libs/common"
 )
 
 var (

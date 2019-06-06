@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
+	cmn "github.com/chainpoint/tendermint/libs/common"
 
-	"github.com/tendermint/tendermint/crypto/merkle"
-	"github.com/tendermint/tendermint/lite"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
+	"github.com/chainpoint/tendermint/crypto/merkle"
+	"github.com/chainpoint/tendermint/lite"
+	rpcclient "github.com/chainpoint/tendermint/rpc/client"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	rpctypes "github.com/chainpoint/tendermint/rpc/lib/types"
 )
 
 var _ rpcclient.Client = Wrapper{}
