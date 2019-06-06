@@ -266,6 +266,11 @@ build-docker:
 	docker build --label=tendermint --tag="tendermint/tendermint" DOCKER
 	rm -rf DOCKER/tendermint
 
+build-docker-cleveldb: build_c
+	cp build/tendermint DOCKER/tendermint
+	docker build --label=tendermint --tag="tendermint/tendermint" -f DOCKER/Dockerfile.cleveldb DOCKER
+	rm -rf DOCKER/tendermint
+
 ###########################################################
 ### Local testnet using docker
 
@@ -309,7 +314,3 @@ sentry-stop:
 build-slate:
 	bash scripts/slate.sh
 
-# To avoid unintended conflicts with file names, always add to .PHONY
-# unless there is a reason not to.
-# https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
-.PHONY: check build build_race build_abci dist install install_abci check_dep check_tools get_tools update_tools get_vendor_deps draw_deps get_protoc protoc_abci protoc_libs gen_certs clean_certs grpc_dbserver test_cover test_apps test_persistence test_p2p test test_race test_integrations test_release test100 vagrant_test fmt rpc-docs build-linux localnet-start localnet-stop build-docker build-docker-localnode sentry-start sentry-config sentry-stop build-slate protoc_grpc protoc_all build_c install_c test_with_deadlock cleanup_after_test_with_deadlock lint
