@@ -177,7 +177,7 @@ func (blockExec *BlockExecutor) ApplyBlock(state State, blockID types.BlockID, b
 // Commit locks the mempool, runs the ABCI Commit message, and updates the
 // mempool.
 // It returns the result of calling abci.Commit (the AppHash), and an error.
-// The gossip must be locked during commit and update because state is
+// The Mempool must be locked during commit and update because state is
 // typically reset on Commit and old txs must be replayed against committed
 // state before new txs are run in the mempool, lest they be invalid.
 func (blockExec *BlockExecutor) Commit(

@@ -481,7 +481,7 @@ type P2PConfig struct {
 	// Does not work if the peer-exchange reactor is disabled.
 	SeedMode bool `mapstructure:"seed_mode"`
 
-	// Comma separated list of peer IDs to keep private (will not be gossiped to
+	// Comma separated list of peer IDs to keep private (will not be Mempooled to
 	// other peers)
 	PrivatePeerIDs string `mapstructure:"private_peer_ids"`
 
@@ -669,7 +669,7 @@ type ConsensusConfig struct {
 	CreateEmptyBlocksInterval time.Duration `mapstructure:"create_empty_blocks_interval"`
 
 	// Reactor sleep duration parameters
-	PeerGossipSleepDuration     time.Duration `mapstructure:"peer_gossip_sleep_duration"`
+	PeerGossipSleepDuration     time.Duration `mapstructure:"peer_Mempool_sleep_duration"`
 	PeerQueryMaj23SleepDuration time.Duration `mapstructure:"peer_query_maj23_sleep_duration"`
 }
 
@@ -780,7 +780,7 @@ func (cfg *ConsensusConfig) ValidateBasic() error {
 		return errors.New("create_empty_blocks_interval can't be negative")
 	}
 	if cfg.PeerGossipSleepDuration < 0 {
-		return errors.New("peer_gossip_sleep_duration can't be negative")
+		return errors.New("peer_Mempool_sleep_duration can't be negative")
 	}
 	if cfg.PeerQueryMaj23SleepDuration < 0 {
 		return errors.New("peer_query_maj23_sleep_duration can't be negative")

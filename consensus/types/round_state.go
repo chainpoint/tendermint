@@ -19,10 +19,10 @@ type RoundStepType uint8 // These must be numeric, ordered.
 const (
 	RoundStepNewHeight     = RoundStepType(0x01) // Wait til CommitTime + timeoutCommit
 	RoundStepNewRound      = RoundStepType(0x02) // Setup new round and go to RoundStepPropose
-	RoundStepPropose       = RoundStepType(0x03) // Did propose, gossip proposal
-	RoundStepPrevote       = RoundStepType(0x04) // Did prevote, gossip prevotes
+	RoundStepPropose       = RoundStepType(0x03) // Did propose, Mempool proposal
+	RoundStepPrevote       = RoundStepType(0x04) // Did prevote, Mempool prevotes
 	RoundStepPrevoteWait   = RoundStepType(0x05) // Did receive any +2/3 prevotes, start timeout
-	RoundStepPrecommit     = RoundStepType(0x06) // Did precommit, gossip precommits
+	RoundStepPrecommit     = RoundStepType(0x06) // Did precommit, Mempool precommits
 	RoundStepPrecommitWait = RoundStepType(0x07) // Did receive any +2/3 precommits, start timeout
 	RoundStepCommit        = RoundStepType(0x08) // Entered commit state machine
 	// NOTE: RoundStepNewHeight acts as RoundStepCommitWait.

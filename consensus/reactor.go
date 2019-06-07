@@ -132,8 +132,8 @@ func (conR *ConsensusReactor) GetChannels() []*p2p.ChannelDescriptor {
 			RecvMessageCapacity: maxMsgSize,
 		},
 		{
-			ID:                  DataChannel, // maybe split between gossiping current block and catchup stuff
-			Priority:            10,          // once we gossip the whole block there's nothing left to send until next height or round
+			ID:                  DataChannel, // maybe split between Mempooling current block and catchup stuff
+			Priority:            10,          // once we Mempool the whole block there's nothing left to send until next height or round
 			SendQueueCapacity:   100,
 			RecvBufferCapacity:  50 * 4096,
 			RecvMessageCapacity: maxMsgSize,
@@ -166,8 +166,8 @@ func (conR *ConsensusReactor) AddPeer(peer p2p.Peer) {
 	peer.Set(types.PeerStateKey, peerState)
 
 	// Begin routines for this peer.
-	go conR.gossipDataRoutine(peer, peerState)
-	go conR.gossipVotesRoutine(peer, peerState)
+	go conR.MempoolDataRoutine(peer, peerState)
+	go conR.MempoolVotesRoutine(peer, peerState)
 	go conR.queryMaj23Routine(peer, peerState)
 
 	// Send our state to peer.
@@ -453,14 +453,14 @@ func (conR *ConsensusReactor) sendNewRoundStepMessage(peer p2p.Peer) {
 	peer.Send(StateChannel, cdc.MustMarshalBinaryBare(nrsMsg))
 }
 
-func (conR *ConsensusReactor) gossipDataRoutine(peer p2p.Peer, ps *PeerState) {
+func (conR *ConsensusReactor) MempoolDataRoutine(peer p2p.Peer, ps *PeerState) {
 	logger := conR.Logger.With("peer", peer)
 
 OUTER_LOOP:
 	for {
 		// Manage disconnects from self or peer.
 		if !peer.IsRunning() || !conR.IsRunning() {
-			logger.Info("Stopping gossipDataRoutine for peer")
+			logger.Info("Stopping MempoolDataRoutine for peer")
 			return
 		}
 		rs := conR.conS.GetRoundState()
@@ -498,7 +498,7 @@ OUTER_LOOP:
 				// continue the loop since prs is a copy and not effected by this initialization
 				continue OUTER_LOOP
 			}
-			conR.gossipDataForCatchup(heightLogger, rs, prs, ps, peer)
+			conR.MempoolDataForCatchup(heightLogger, rs, prs, ps, peer)
 			continue OUTER_LOOP
 		}
 
@@ -547,7 +547,7 @@ OUTER_LOOP:
 	}
 }
 
-func (conR *ConsensusReactor) gossipDataForCatchup(logger log.Logger, rs *cstypes.RoundState,
+func (conR *ConsensusReactor) MempoolDataForCatchup(logger log.Logger, rs *cstypes.RoundState,
 	prs *cstypes.PeerRoundState, ps *PeerState, peer p2p.Peer) {
 
 	if index, ok := prs.ProposalBlockParts.Not().PickRandom(); ok {
@@ -590,7 +590,7 @@ func (conR *ConsensusReactor) gossipDataForCatchup(logger log.Logger, rs *cstype
 	time.Sleep(conR.conS.config.PeerGossipSleepDuration)
 }
 
-func (conR *ConsensusReactor) gossipVotesRoutine(peer p2p.Peer, ps *PeerState) {
+func (conR *ConsensusReactor) MempoolVotesRoutine(peer p2p.Peer, ps *PeerState) {
 	logger := conR.Logger.With("peer", peer)
 
 	// Simple hack to throttle logs upon sleep.
@@ -600,7 +600,7 @@ OUTER_LOOP:
 	for {
 		// Manage disconnects from self or peer.
 		if !peer.IsRunning() || !conR.IsRunning() {
-			logger.Info("Stopping gossipVotesRoutine for peer")
+			logger.Info("Stopping MempoolVotesRoutine for peer")
 			return
 		}
 		rs := conR.conS.GetRoundState()
@@ -613,13 +613,13 @@ OUTER_LOOP:
 			sleeping = 0
 		}
 
-		//logger.Debug("gossipVotesRoutine", "rsHeight", rs.Height, "rsRound", rs.Round,
+		//logger.Debug("MempoolVotesRoutine", "rsHeight", rs.Height, "rsRound", rs.Round,
 		//	"prsHeight", prs.Height, "prsRound", prs.Round, "prsStep", prs.Step)
 
 		// If height matches, then send LastCommit, Prevotes, Precommits.
 		if rs.Height == prs.Height {
 			heightLogger := logger.With("height", prs.Height)
-			if conR.gossipVotesForHeight(heightLogger, rs, prs, ps) {
+			if conR.MempoolVotesForHeight(heightLogger, rs, prs, ps) {
 				continue OUTER_LOOP
 			}
 		}
@@ -661,7 +661,7 @@ OUTER_LOOP:
 	}
 }
 
-func (conR *ConsensusReactor) gossipVotesForHeight(logger log.Logger, rs *cstypes.RoundState, prs *cstypes.PeerRoundState, ps *PeerState) bool {
+func (conR *ConsensusReactor) MempoolVotesForHeight(logger log.Logger, rs *cstypes.RoundState, prs *cstypes.PeerRoundState, ps *PeerState) bool {
 
 	// If there are lastCommits to send...
 	if prs.Step == cstypes.RoundStepNewHeight {
@@ -1505,7 +1505,7 @@ func (m *ProposalPOLMessage) String() string {
 
 //-------------------------------------
 
-// BlockPartMessage is sent when gossipping a piece of the proposed block.
+// BlockPartMessage is sent when Mempoolping a piece of the proposed block.
 type BlockPartMessage struct {
 	Height int64
 	Round  int

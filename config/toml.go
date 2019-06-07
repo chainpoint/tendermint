@@ -247,7 +247,7 @@ pex = {{ .P2P.PexReactor }}
 # Does not work if the peer-exchange reactor is disabled.
 seed_mode = {{ .P2P.SeedMode }}
 
-# Comma separated list of peer IDs to keep private (will not be gossiped to other peers)
+# Comma separated list of peer IDs to keep private (will not be Mempooled to other peers)
 private_peer_ids = "{{ .P2P.PrivatePeerIDs }}"
 
 # Toggle to disable guard against peers connecting from the same ip.
@@ -260,20 +260,20 @@ dial_timeout = "{{ .P2P.DialTimeout }}"
 ##### mempool configuration options #####
 [mempool]
 
-recheck = {{ .gossip.Recheck }}
-broadcast = {{ .gossip.Broadcast }}
-wal_dir = "{{ js .gossip.WalPath }}"
+recheck = {{ .Mempool.Recheck }}
+broadcast = {{ .Mempool.Broadcast }}
+wal_dir = "{{ js .Mempool.WalPath }}"
 
 # Maximum number of transactions in the mempool
-size = {{ .gossip.Size }}
+size = {{ .Mempool.Size }}
 
 # Limit the total size of all txs in the mempool.
 # This only accounts for raw transactions (e.g. given 1MB transactions and
 # max_txs_bytes=5MB, mempool will only accept 5 transactions).
-max_txs_bytes = {{ .gossip.MaxTxsBytes }}
+max_txs_bytes = {{ .Mempool.MaxTxsBytes }}
 
 # Size of the cache (used to filter transactions we saw earlier) in transactions
-cache_size = {{ .gossip.CacheSize }}
+cache_size = {{ .Mempool.CacheSize }}
 
 ##### consensus configuration options #####
 [consensus]
@@ -296,7 +296,7 @@ create_empty_blocks = {{ .Consensus.CreateEmptyBlocks }}
 create_empty_blocks_interval = "{{ .Consensus.CreateEmptyBlocksInterval }}"
 
 # Reactor sleep duration parameters
-peer_gossip_sleep_duration = "{{ .Consensus.PeerGossipSleepDuration }}"
+peer_Mempool_sleep_duration = "{{ .Consensus.PeerGossipSleepDuration }}"
 peer_query_maj23_sleep_duration = "{{ .Consensus.PeerQueryMaj23SleepDuration }}"
 
 ##### transactions indexer configuration options #####

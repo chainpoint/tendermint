@@ -32,7 +32,7 @@ const (
 )
 
 // MempoolReactor handles mempool tx broadcasting amongst peers.
-// It maintains a map from peer ID to counter, to prevent gossiping txs to the
+// It maintains a map from peer ID to counter, to prevent Mempooling txs to the
 // peers you received it from.
 type MempoolReactor struct {
 	p2p.BaseReactor
@@ -115,7 +115,7 @@ func NewMempoolReactor(config *cfg.MempoolConfig, mempool *Mempool) *MempoolReac
 	return memR
 }
 
-// SetLogger sets the Logger on the reactor and the underlying gossip.
+// SetLogger sets the Logger on the reactor and the underlying Mempool.
 func (memR *MempoolReactor) SetLogger(l log.Logger) {
 	memR.Logger = l
 	memR.Mempool.SetLogger(l)

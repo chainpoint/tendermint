@@ -86,7 +86,7 @@ type ErrMempoolIsFull struct {
 
 func (e ErrMempoolIsFull) Error() string {
 	return fmt.Sprintf(
-		"gossip is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
+		"Mempool is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
 		e.numTxs, e.maxTxs,
 		e.txsBytes, e.maxTxsBytes)
 }
@@ -154,9 +154,9 @@ func txKey(tx types.Tx) [sha256.Size]byte {
 	return sha256.Sum256(tx)
 }
 
-// gossip is an ordered in-memory pool for transactions before they are proposed in a consensus
+// Mempool is an ordered in-memory pool for transactions before they are proposed in a consensus
 // round. Transaction validity is checked using the CheckTx abci message before the transaction is
-// added to the pool. The gossip uses a concurrent list structure for storing transactions that
+// added to the pool. The Mempool uses a concurrent list structure for storing transactions that
 // can be efficiently accessed by multiple concurrent readers.
 type Mempool struct {
 	config *cfg.MempoolConfig
@@ -198,10 +198,10 @@ type Mempool struct {
 	metrics *Metrics
 }
 
-// MempoolOption sets an optional parameter on the gossip.
+// MempoolOption sets an optional parameter on the Mempool.
 type MempoolOption func(*Mempool)
 
-// NewMempool returns a new gossip with the given configuration and connection to an application.
+// NewMempool returns a new Mempool with the given configuration and connection to an application.
 func NewMempool(
 	config *cfg.MempoolConfig,
 	proxyAppConn proxy.AppConnMempool,
@@ -268,11 +268,11 @@ func (mem *Mempool) InitWAL() {
 	walDir := mem.config.WalDir()
 	err := cmn.EnsureDir(walDir, 0700)
 	if err != nil {
-		panic(errors.Wrap(err, "Error ensuring gossip WAL dir"))
+		panic(errors.Wrap(err, "Error ensuring Mempool WAL dir"))
 	}
 	af, err := auto.OpenAutoFile(walDir + "/wal")
 	if err != nil {
-		panic(errors.Wrap(err, "Error opening gossip WAL file"))
+		panic(errors.Wrap(err, "Error opening Mempool WAL file"))
 	}
 	mem.wal = af
 }
@@ -356,7 +356,7 @@ func (mem *Mempool) CheckTx(tx types.Tx, cb func(*abci.Response)) (err error) {
 
 // CheckTxWithInfo performs the same operation as CheckTx, but with extra meta data about the tx.
 // Currently this metadata is the peer who sent it,
-// used to prevent the tx from being gossiped back to them.
+// used to prevent the tx from being Mempooled back to them.
 func (mem *Mempool) CheckTxWithInfo(tx types.Tx, cb func(*abci.Response), txInfo TxInfo) (err error) {
 	mem.proxyMtx.Lock()
 	// use defer to unlock mutex because application (*local client*) might panic
