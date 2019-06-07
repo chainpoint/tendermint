@@ -162,7 +162,7 @@ type Mempool struct {
 	config *cfg.MempoolConfig
 
 	proxyMtx     sync.Mutex
-	proxyAppConn proxy.AppConnMempool
+	proxyAppConn proxy.AppConnGossip
 	txs          *clist.CList // concurrent linked-list of good txs
 	preCheck     PreCheckFunc
 	postCheck    PostCheckFunc
@@ -424,7 +424,7 @@ func (mem *Mempool) CheckTxWithInfo(tx types.Tx, cb func(*abci.Response), txInfo
 		return err
 	}
 
-	reqRes := mem.proxyAppConn.CheckTxAsync(tx)
+	reqRes := mem.proxyAppConn.DeliverMsgAsync(tx)
 	reqRes.SetCallback(mem.reqResCb(tx, txInfo.PeerID, cb))
 
 	return nil
