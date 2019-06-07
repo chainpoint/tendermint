@@ -92,6 +92,17 @@ func (app *localClient) DeliverTxAsync(tx []byte) *ReqRes {
 	)
 }
 
+func (app *localClient) DeliverMsgAsync(msg []byte) *ReqRes {
+	app.mtx.Lock()
+	defer app.mtx.Unlock()
+
+	res := app.Application.DeliverMsg(msg)
+	return app.callback(
+		types.ToRequestDeliverMsg(msg),
+		types.ToResponseDeliverMsg(res),
+	)
+}
+
 func (app *localClient) CheckTxAsync(tx []byte) *ReqRes {
 	app.mtx.Lock()
 	defer app.mtx.Unlock()
@@ -189,6 +200,14 @@ func (app *localClient) DeliverTxSync(tx []byte) (*types.ResponseDeliverTx, erro
 	defer app.mtx.Unlock()
 
 	res := app.Application.DeliverTx(tx)
+	return &res, nil
+}
+
+func (app *localClient) DeliverMsgSync(msg []byte) (*types.ResponseDeliverMsg, error) {
+	app.mtx.Lock()
+	defer app.mtx.Unlock()
+
+	res := app.Application.DeliverMsg(msg)
 	return &res, nil
 }
 

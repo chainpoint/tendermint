@@ -74,6 +74,10 @@ func (app *PersistentKVStoreApplication) DeliverTx(tx []byte) types.ResponseDeli
 	return app.app.DeliverTx(tx)
 }
 
+func (app *PersistentKVStoreApplication) DeliverMsg(msg []byte) types.ResponseDeliverMsg {
+	return app.app.DeliverMsg(msg)
+}
+
 func (app *PersistentKVStoreApplication) CheckTx(tx []byte) types.ResponseCheckTx {
 	return app.app.CheckTx(tx)
 }

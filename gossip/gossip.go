@@ -204,7 +204,7 @@ type MempoolOption func(*Gossip)
 // NewMempool returns a new Gossip with the given configuration and connection to an application.
 func NewMempool(
 	config *cfg.MempoolConfig,
-	proxyAppConn proxy.AppConnMempool,
+	proxyAppConn proxy.AppConnGossip,
 	height int64,
 	options ...MempoolOption,
 ) *Gossip {

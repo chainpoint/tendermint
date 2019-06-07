@@ -179,6 +179,12 @@ func ToResponseDeliverTx(res ResponseDeliverTx) *Response {
 	}
 }
 
+func ToResponseDeliverMsg(res ResponseDeliverMsg) *Response {
+	return &Response{
+		Value: &Response_DeliverMsg{&res},
+	}
+}
+
 func ToResponseCheckTx(res ResponseCheckTx) *Response {
 	return &Response{
 		Value: &Response_CheckTx{&res},
