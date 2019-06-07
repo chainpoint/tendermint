@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 
 	"github.com/pkg/errors"
+	cfg "github.com/chainpoint/tendermint/config"
 
 	abci "github.com/chainpoint/tendermint/abci/types"
 	"github.com/chainpoint/tendermint/libs/clist"
@@ -76,6 +77,8 @@ func msgKey(msg types.Tx) [sha256.Size]byte {
 // added to the pool. The Gossip uses a concurrent list structure for storing transactions that
 // can be efficiently accessed by multiple concurrent readers.
 type Gossip struct {
+	config *cfg.MempoolConfig
+
 	proxyMmsg     sync.Mutex
 	proxyAppConn proxy.AppConnGossip
 	msgs          *clist.CList // concurrent linked-list of good msgs
@@ -110,12 +113,14 @@ type Gossip struct {
 
 // NewMempool returns a new Gossip with the given configuration and connection to an application.
 func NewGossip(
+	config *cfg.MempoolConfig,
 	proxyAppConn proxy.AppConnGossip,
 	height int64,
 ) *Gossip {
 	gossip := &Gossip{
+		config: 	   config,
 		proxyAppConn:  proxyAppConn,
-		msgs:           clist.New(),
+		msgs:          clist.New(),
 		height:        height,
 		rechecking:    0,
 		recheckCursor: nil,
@@ -219,7 +224,7 @@ func (gos *Gossip) DeliverMsgWithInfo(msg types.Tx, cb func(*abci.Response), msg
 		// (eg. after committing a block, msgs are removed from mempool but not cache),
 		// so we only record the sender for msgs still in the mempool.
 		if e, ok := gos.msgsMap.Load(msgKey(msg)); ok {
-			memTx := e.(*clist.CElement).Value.(*mempoolTx)
+			memTx := e.(*clist.CElement).Value.(*gossipTx)
 			if _, loaded := memTx.senders.LoadOrStore(msgInfo.PeerID, true); loaded {
 				// TODO: consider punishing peer for dups,
 				// its non-trivial since invalid msgs can become valid,
@@ -291,7 +296,7 @@ func (gos *Gossip) reqResCb(msg []byte, peerID uint16, externalCb func(*abci.Res
 
 // Called from:
 //  - resCbFirstTime (lock not held) if msg is valid
-func (gos *Gossip) addTx(memTx *mempoolTx) {
+func (gos *Gossip) addTx(memTx *gossipTx) {
 	e := gos.msgs.PushBack(memTx)
 	gos.msgsMap.Store(msgKey(memTx.msg), e)
 	atomic.AddInt64(&gos.msgsBytes, int64(len(memTx.msg)))
@@ -320,7 +325,7 @@ func (gos *Gossip) resCbFirstTime(msg []byte, peerID uint16, res *abci.Response)
 	switch r := res.Value.(type) {
 	case *abci.Response_DeliverMsg:
 		if (r.DeliverMsg.Code == abci.CodeTypeOK) {
-			memTx := &mempoolTx{
+			memTx := &gossipTx{
 				height:    gos.height,
 				msg:        msg,
 			}
@@ -353,7 +358,7 @@ func (gos *Gossip) resCbRecheck(req *abci.Request, res *abci.Response) {
 	switch r := res.Value.(type) {
 	case *abci.Response_CheckTx:
 		msg := req.GetCheckTx().Tx
-		memTx := gos.recheckCursor.Value.(*mempoolTx)
+		memTx := gos.recheckCursor.Value.(*gossipTx)
 		if !bytes.Equal(msg, memTx.msg) {
 			panic(fmt.Sprintf(
 				"Unexpected msg response from proxy during recheck\nExpected %X, got %X",
@@ -397,7 +402,7 @@ func (gos *Gossip) TxsAvailable() <-chan struct{} {
 
 func (gos *Gossip) notifyTxsAvailable() {
 	if gos.Size() == 0 {
-		panic("notified msgs available but mempool is empty!")
+		panic("notified msgs available but gossipis empty!")
 	}
 	if gos.msgsAvailable != nil && !gos.notifiedTxsAvailable {
 		// channel cap is 1, so this will send once
@@ -418,7 +423,7 @@ func (gos *Gossip) removeTxs(msgs types.Txs) []types.Tx {
 
 	msgsLeft := make([]types.Tx, 0, gos.msgs.Len())
 	for e := gos.msgs.Front(); e != nil; e = e.Next() {
-		memTx := e.Value.(*mempoolTx)
+		memTx := e.Value.(*gossipTx)
 		// Remove the msg if it's already in a block.
 		if _, ok := msgsMap[string(memTx.msg)]; ok {
 			// NOTE: we don't remove committed msgs from the cache.
@@ -450,8 +455,8 @@ func (gos *Gossip) recheckTxs(msgs []types.Tx) {
 
 //--------------------------------------------------------------------------------
 
-// mempoolTx is a transaction that successfully ran
-type mempoolTx struct {
+// gossipTx is a transaction that successfully ran
+type gossipTx struct {
 	height    int64    // height that this msg had been validated in
 	msg        types.Tx //
 
@@ -461,7 +466,7 @@ type mempoolTx struct {
 }
 
 // Height returns the height for this transaction
-func (memTx *mempoolTx) Height() int64 {
+func (memTx *gossipTx) Height() int64 {
 	return atomic.LoadInt64(&memTx.height)
 }
 

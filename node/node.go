@@ -28,6 +28,7 @@ import (
 	"github.com/chainpoint/tendermint/libs/log"
 	tmpubsub "github.com/chainpoint/tendermint/libs/pubsub"
 	mempl "github.com/chainpoint/tendermint/mempool"
+	gos "github.com/chainpoint/tendermint/gossip"
 	"github.com/chainpoint/tendermint/p2p"
 	"github.com/chainpoint/tendermint/p2p/pex"
 	"github.com/chainpoint/tendermint/privval"
@@ -340,6 +341,21 @@ func NewNode(config *cfg.Config,
 		mempool.EnableTxsAvailable()
 	}
 
+	// Make MempoolReactor
+	gossip := gos.NewGossip(
+		config.Mempool,
+		proxyApp.Gossip(),
+		state.LastBlockHeight,
+	)
+	gossipLogger := logger.With("module", "gossip")
+	gossip.SetLogger(gossipLogger)
+	gossipReactor := gos.NewGossipReactor(config.Mempool, gossip)
+	gossipReactor.SetLogger(gossipLogger)
+
+	if config.Consensus.WaitForTxs() {
+		gossip.EnableTxsAvailable()
+	}
+
 	// Make Evidence Reactor
 	evidenceDB, err := dbProvider(&DBContext{"evidence", config})
 	if err != nil {
@@ -466,6 +482,7 @@ func NewNode(config *cfg.Config,
 	)
 	sw.SetLogger(p2pLogger)
 	sw.AddReactor("MEMPOOL", mempoolReactor)
+	sw.AddReactor("GOSSIP", gossipReactor)
 	sw.AddReactor("BLOCKCHAIN", bcReactor)
 	sw.AddReactor("CONSENSUS", consensusReactor)
 	sw.AddReactor("EVIDENCE", evidenceReactor)
