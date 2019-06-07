@@ -37,7 +37,7 @@ const (
 type MempoolReactor struct {
 	p2p.BaseReactor
 	config  *cfg.MempoolConfig
-	Mempool *Mempool
+	Mempool *Gossip
 	ids     *mempoolIDs
 }
 
@@ -105,7 +105,7 @@ func newMempoolIDs() *mempoolIDs {
 }
 
 // NewMempoolReactor returns a new MempoolReactor with the given config and mempool.
-func NewMempoolReactor(config *cfg.MempoolConfig, mempool *Mempool) *MempoolReactor {
+func NewMempoolReactor(config *cfg.MempoolConfig, mempool *Gossip) *MempoolReactor {
 	memR := &MempoolReactor{
 		config:  config,
 		Mempool: mempool,
@@ -115,7 +115,7 @@ func NewMempoolReactor(config *cfg.MempoolConfig, mempool *Mempool) *MempoolReac
 	return memR
 }
 
-// SetLogger sets the Logger on the reactor and the underlying Mempool.
+// SetLogger sets the Logger on the reactor and the underlying Gossip.
 func (memR *MempoolReactor) SetLogger(l log.Logger) {
 	memR.Logger = l
 	memR.Mempool.SetLogger(l)

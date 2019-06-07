@@ -86,7 +86,7 @@ type ErrMempoolIsFull struct {
 
 func (e ErrMempoolIsFull) Error() string {
 	return fmt.Sprintf(
-		"Mempool is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
+		"Gossip is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
 		e.numTxs, e.maxTxs,
 		e.txsBytes, e.maxTxsBytes)
 }
@@ -154,11 +154,11 @@ func txKey(tx types.Tx) [sha256.Size]byte {
 	return sha256.Sum256(tx)
 }
 
-// Mempool is an ordered in-memory pool for transactions before they are proposed in a consensus
+// Gossip is an ordered in-memory pool for transactions before they are proposed in a consensus
 // round. Transaction validity is checked using the CheckTx abci message before the transaction is
-// added to the pool. The Mempool uses a concurrent list structure for storing transactions that
+// added to the pool. The Gossip uses a concurrent list structure for storing transactions that
 // can be efficiently accessed by multiple concurrent readers.
-type Mempool struct {
+type Gossip struct {
 	config *cfg.MempoolConfig
 
 	proxyMtx     sync.Mutex
@@ -198,17 +198,17 @@ type Mempool struct {
 	metrics *Metrics
 }
 
-// MempoolOption sets an optional parameter on the Mempool.
-type MempoolOption func(*Mempool)
+// MempoolOption sets an optional parameter on the Gossip.
+type MempoolOption func(*Gossip)
 
-// NewMempool returns a new Mempool with the given configuration and connection to an application.
+// NewMempool returns a new Gossip with the given configuration and connection to an application.
 func NewMempool(
 	config *cfg.MempoolConfig,
 	proxyAppConn proxy.AppConnMempool,
 	height int64,
 	options ...MempoolOption,
-) *Mempool {
-	mempool := &Mempool{
+) *Gossip {
+	mempool := &Gossip{
 		config:        config,
 		proxyAppConn:  proxyAppConn,
 		txs:           clist.New(),
@@ -234,52 +234,52 @@ func NewMempool(
 // EnableTxsAvailable initializes the TxsAvailable channel,
 // ensuring it will trigger once every height when transactions are available.
 // NOTE: not thread safe - should only be called once, on startup
-func (mem *Mempool) EnableTxsAvailable() {
+func (mem *Gossip) EnableTxsAvailable() {
 	mem.txsAvailable = make(chan struct{}, 1)
 }
 
 // SetLogger sets the Logger.
-func (mem *Mempool) SetLogger(l log.Logger) {
+func (mem *Gossip) SetLogger(l log.Logger) {
 	mem.logger = l
 }
 
 // WithPreCheck sets a filter for the mempool to reject a tx if f(tx) returns
 // false. This is ran before CheckTx.
 func WithPreCheck(f PreCheckFunc) MempoolOption {
-	return func(mem *Mempool) { mem.preCheck = f }
+	return func(mem *Gossip) { mem.preCheck = f }
 }
 
 // WithPostCheck sets a filter for the mempool to reject a tx if f(tx) returns
 // false. This is ran after CheckTx.
 func WithPostCheck(f PostCheckFunc) MempoolOption {
-	return func(mem *Mempool) { mem.postCheck = f }
+	return func(mem *Gossip) { mem.postCheck = f }
 }
 
 // WithMetrics sets the metrics.
 func WithMetrics(metrics *Metrics) MempoolOption {
-	return func(mem *Mempool) { mem.metrics = metrics }
+	return func(mem *Gossip) { mem.metrics = metrics }
 }
 
 // InitWAL creates a directory for the WAL file and opens a file itself.
 //
 // *panics* if can't create directory or open file.
 // *not thread safe*
-func (mem *Mempool) InitWAL() {
+func (mem *Gossip) InitWAL() {
 	walDir := mem.config.WalDir()
 	err := cmn.EnsureDir(walDir, 0700)
 	if err != nil {
-		panic(errors.Wrap(err, "Error ensuring Mempool WAL dir"))
+		panic(errors.Wrap(err, "Error ensuring Gossip WAL dir"))
 	}
 	af, err := auto.OpenAutoFile(walDir + "/wal")
 	if err != nil {
-		panic(errors.Wrap(err, "Error opening Mempool WAL file"))
+		panic(errors.Wrap(err, "Error opening Gossip WAL file"))
 	}
 	mem.wal = af
 }
 
 // CloseWAL closes and discards the underlying WAL file.
 // Any further writes will not be relayed to disk.
-func (mem *Mempool) CloseWAL() {
+func (mem *Gossip) CloseWAL() {
 	mem.proxyMtx.Lock()
 	defer mem.proxyMtx.Unlock()
 
@@ -290,33 +290,33 @@ func (mem *Mempool) CloseWAL() {
 }
 
 // Lock locks the mempool. The consensus must be able to hold lock to safely update.
-func (mem *Mempool) Lock() {
+func (mem *Gossip) Lock() {
 	mem.proxyMtx.Lock()
 }
 
 // Unlock unlocks the mempool.
-func (mem *Mempool) Unlock() {
+func (mem *Gossip) Unlock() {
 	mem.proxyMtx.Unlock()
 }
 
 // Size returns the number of transactions in the mempool.
-func (mem *Mempool) Size() int {
+func (mem *Gossip) Size() int {
 	return mem.txs.Len()
 }
 
 // TxsBytes returns the total size of all txs in the mempool.
-func (mem *Mempool) TxsBytes() int64 {
+func (mem *Gossip) TxsBytes() int64 {
 	return atomic.LoadInt64(&mem.txsBytes)
 }
 
 // FlushAppConn flushes the mempool connection to ensure async reqResCb calls are
 // done. E.g. from CheckTx.
-func (mem *Mempool) FlushAppConn() error {
+func (mem *Gossip) FlushAppConn() error {
 	return mem.proxyAppConn.FlushSync()
 }
 
 // Flush removes all transactions from the mempool and cache
-func (mem *Mempool) Flush() {
+func (mem *Gossip) Flush() {
 	mem.proxyMtx.Lock()
 	defer mem.proxyMtx.Unlock()
 
@@ -333,14 +333,14 @@ func (mem *Mempool) Flush() {
 
 // TxsFront returns the first transaction in the ordered list for peer
 // goroutines to call .NextWait() on.
-func (mem *Mempool) TxsFront() *clist.CElement {
+func (mem *Gossip) TxsFront() *clist.CElement {
 	return mem.txs.Front()
 }
 
 // TxsWaitChan returns a channel to wait on transactions. It will be closed
 // once the mempool is not empty (ie. the internal `mem.txs` has at least one
 // element)
-func (mem *Mempool) TxsWaitChan() <-chan struct{} {
+func (mem *Gossip) TxsWaitChan() <-chan struct{} {
 	return mem.txs.WaitChan()
 }
 
@@ -350,14 +350,14 @@ func (mem *Mempool) TxsWaitChan() <-chan struct{} {
 // cb: A callback from the CheckTx command.
 //     It gets called from another goroutine.
 // CONTRACT: Either cb will get called, or err returned.
-func (mem *Mempool) CheckTx(tx types.Tx, cb func(*abci.Response)) (err error) {
+func (mem *Gossip) CheckTx(tx types.Tx, cb func(*abci.Response)) (err error) {
 	return mem.CheckTxWithInfo(tx, cb, TxInfo{PeerID: UnknownPeerID})
 }
 
 // CheckTxWithInfo performs the same operation as CheckTx, but with extra meta data about the tx.
 // Currently this metadata is the peer who sent it,
 // used to prevent the tx from being gossiped back to them.
-func (mem *Mempool) CheckTxWithInfo(tx types.Tx, cb func(*abci.Response), txInfo TxInfo) (err error) {
+func (mem *Gossip) CheckTxWithInfo(tx types.Tx, cb func(*abci.Response), txInfo TxInfo) (err error) {
 	mem.proxyMtx.Lock()
 	// use defer to unlock mutex because application (*local client*) might panic
 	defer mem.proxyMtx.Unlock()
@@ -437,7 +437,7 @@ func (mem *Mempool) CheckTxWithInfo(tx types.Tx, cb func(*abci.Response), txInfo
 // include this information. If we're not in the midst of a recheck, this function will just return,
 // so the request specific callback can do the work.
 // When rechecking, we don't need the peerID, so the recheck callback happens here.
-func (mem *Mempool) globalCb(req *abci.Request, res *abci.Response) {
+func (mem *Gossip) globalCb(req *abci.Request, res *abci.Response) {
 	if mem.recheckCursor == nil {
 		return
 	}
@@ -458,7 +458,7 @@ func (mem *Mempool) globalCb(req *abci.Request, res *abci.Response) {
 // when all other response processing is complete.
 //
 // Used in CheckTxWithInfo to record PeerID who sent us the tx.
-func (mem *Mempool) reqResCb(tx []byte, peerID uint16, externalCb func(*abci.Response)) func(res *abci.Response) {
+func (mem *Gossip) reqResCb(tx []byte, peerID uint16, externalCb func(*abci.Response)) func(res *abci.Response) {
 	return func(res *abci.Response) {
 		if mem.recheckCursor != nil {
 			// this should never happen
@@ -479,7 +479,7 @@ func (mem *Mempool) reqResCb(tx []byte, peerID uint16, externalCb func(*abci.Res
 
 // Called from:
 //  - resCbFirstTime (lock not held) if tx is valid
-func (mem *Mempool) addTx(memTx *mempoolTx) {
+func (mem *Gossip) addTx(memTx *mempoolTx) {
 	e := mem.txs.PushBack(memTx)
 	mem.txsMap.Store(txKey(memTx.tx), e)
 	atomic.AddInt64(&mem.txsBytes, int64(len(memTx.tx)))
@@ -489,7 +489,7 @@ func (mem *Mempool) addTx(memTx *mempoolTx) {
 // Called from:
 //  - Update (lock held) if tx was committed
 // 	- resCbRecheck (lock not held) if tx was invalidated
-func (mem *Mempool) removeTx(tx types.Tx, elem *clist.CElement, removeFromCache bool) {
+func (mem *Gossip) removeTx(tx types.Tx, elem *clist.CElement, removeFromCache bool) {
 	mem.txs.Remove(elem)
 	elem.DetachPrev()
 	mem.txsMap.Delete(txKey(tx))
@@ -504,7 +504,7 @@ func (mem *Mempool) removeTx(tx types.Tx, elem *clist.CElement, removeFromCache 
 //
 // The case where the app checks the tx for the second and subsequent times is
 // handled by the resCbRecheck callback.
-func (mem *Mempool) resCbFirstTime(tx []byte, peerID uint16, res *abci.Response) {
+func (mem *Gossip) resCbFirstTime(tx []byte, peerID uint16, res *abci.Response) {
 	switch r := res.Value.(type) {
 	case *abci.Response_CheckTx:
 		var postCheckErr error
@@ -542,7 +542,7 @@ func (mem *Mempool) resCbFirstTime(tx []byte, peerID uint16, res *abci.Response)
 //
 // The case where the app checks the tx for the first time is handled by the
 // resCbFirstTime callback.
-func (mem *Mempool) resCbRecheck(req *abci.Request, res *abci.Response) {
+func (mem *Gossip) resCbRecheck(req *abci.Request, res *abci.Response) {
 	switch r := res.Value.(type) {
 	case *abci.Response_CheckTx:
 		tx := req.GetCheckTx().Tx
@@ -588,11 +588,11 @@ func (mem *Mempool) resCbRecheck(req *abci.Request, res *abci.Response) {
 // TxsAvailable returns a channel which fires once for every height,
 // and only when transactions are available in the mempool.
 // NOTE: the returned channel may be nil if EnableTxsAvailable was not called.
-func (mem *Mempool) TxsAvailable() <-chan struct{} {
+func (mem *Gossip) TxsAvailable() <-chan struct{} {
 	return mem.txsAvailable
 }
 
-func (mem *Mempool) notifyTxsAvailable() {
+func (mem *Gossip) notifyTxsAvailable() {
 	if mem.Size() == 0 {
 		panic("notified txs available but mempool is empty!")
 	}
@@ -610,7 +610,7 @@ func (mem *Mempool) notifyTxsAvailable() {
 // with the condition that the total gasWanted must be less than maxGas.
 // If both maxes are negative, there is no cap on the size of all returned
 // transactions (~ all available transactions).
-func (mem *Mempool) ReapMaxBytesMaxGas(maxBytes, maxGas int64) types.Txs {
+func (mem *Gossip) ReapMaxBytesMaxGas(maxBytes, maxGas int64) types.Txs {
 	mem.proxyMtx.Lock()
 	defer mem.proxyMtx.Unlock()
 
@@ -650,7 +650,7 @@ func (mem *Mempool) ReapMaxBytesMaxGas(maxBytes, maxGas int64) types.Txs {
 // ReapMaxTxs reaps up to max transactions from the mempool.
 // If max is negative, there is no cap on the size of all returned
 // transactions (~ all available transactions).
-func (mem *Mempool) ReapMaxTxs(max int) types.Txs {
+func (mem *Gossip) ReapMaxTxs(max int) types.Txs {
 	mem.proxyMtx.Lock()
 	defer mem.proxyMtx.Unlock()
 
@@ -674,7 +674,7 @@ func (mem *Mempool) ReapMaxTxs(max int) types.Txs {
 // Update informs the mempool that the given txs were committed and can be discarded.
 // NOTE: this should be called *after* block is committed by consensus.
 // NOTE: unsafe; Lock/Unlock must be managed by caller
-func (mem *Mempool) Update(
+func (mem *Gossip) Update(
 	height int64,
 	txs types.Txs,
 	preCheck PreCheckFunc,
@@ -719,7 +719,7 @@ func (mem *Mempool) Update(
 	return nil
 }
 
-func (mem *Mempool) removeTxs(txs types.Txs) []types.Tx {
+func (mem *Gossip) removeTxs(txs types.Txs) []types.Tx {
 	// Build a map for faster lookups.
 	txsMap := make(map[string]struct{}, len(txs))
 	for _, tx := range txs {
@@ -742,7 +742,7 @@ func (mem *Mempool) removeTxs(txs types.Txs) []types.Tx {
 }
 
 // NOTE: pass in txs because mem.txs can mutate concurrently.
-func (mem *Mempool) recheckTxs(txs []types.Tx) {
+func (mem *Gossip) recheckTxs(txs []types.Tx) {
 	if len(txs) == 0 {
 		return
 	}
@@ -753,7 +753,7 @@ func (mem *Mempool) recheckTxs(txs []types.Tx) {
 	// Push txs to proxyAppConn
 	// NOTE: globalCb may be called concurrently.
 	for _, tx := range txs {
-		mem.proxyAppConn.CheckTxAsync(tx)
+		mem.proxyAppConn.DeliverMsgAsync(tx)
 	}
 	mem.proxyAppConn.FlushAsync()
 }
