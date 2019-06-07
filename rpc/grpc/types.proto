@@ -25,6 +25,10 @@ message RequestBroadcastTx {
   bytes tx = 1;
 }
 
+message RequestBroadcastMsg {
+  bytes msg = 1;
+}
+
 //----------------------------------------
 // Response types
 
@@ -36,10 +40,15 @@ message ResponseBroadcastTx{
   types.ResponseDeliverTx deliver_tx = 2;
 }
 
+message ResponseBroadcastMsg{
+  types.ResponseDeliverMsg deliver_msg = 1;
+}
+
 //----------------------------------------
 // Service Definition
 
 service BroadcastAPI {
   rpc Ping(RequestPing) returns (ResponsePing) ;
   rpc BroadcastTx(RequestBroadcastTx) returns (ResponseBroadcastTx) ;
+  rpc BroadcastMsg(RequestBroadcastMsg) returns (ResponseBroadcastMsg) ;
 }

@@ -115,7 +115,7 @@ func NewMempoolReactor(config *cfg.MempoolConfig, mempool *Mempool) *MempoolReac
 	return memR
 }
 
-// SetLogger sets the Logger on the reactor and the underlying Mempool.
+// SetLogger sets the Logger on the reactor and the underlying gossip.
 func (memR *MempoolReactor) SetLogger(l log.Logger) {
 	memR.Logger = l
 	memR.Mempool.SetLogger(l)

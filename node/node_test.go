@@ -222,7 +222,7 @@ func TestCreateProposalBlock(t *testing.T) {
 	state.ConsensusParams.Block.MaxBytes = int64(maxBytes)
 	proposerAddr, _ := state.Validators.GetByIndex(0)
 
-	// Make Mempool
+	// Make gossip
 	memplMetrics := mempl.PrometheusMetrics("node_test")
 	mempool := mempl.NewMempool(
 		config.Mempool,

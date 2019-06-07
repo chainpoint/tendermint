@@ -37,3 +37,20 @@ func (bapi *broadcastAPI) BroadcastTx(ctx context.Context, req *RequestBroadcast
 		},
 	}, nil
 }
+
+func (bapi *broadcastAPI) BroadcastMsg(ctx context.Context, req *RequestBroadcastMsg) (*ResponseBroadcastMsg, error) {
+	// NOTE: there's no way to get client's remote address
+	// see https://stackoverflow.com/questions/33684570/session-and-remote-ip-address-in-grpc-go
+	res, err := core.BroadcastMsgCommit(&rpctypes.Context{}, req.Msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ResponseBroadcastMsg{
+		DeliverMsg: &abci.ResponseDeliverMsg{
+			Code: res.DeliverMsg.Code,
+			Data: res.DeliverMsg.Data,
+			Log:  res.DeliverMsg.Log,
+		},
+	}, nil
+}

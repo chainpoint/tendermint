@@ -7,43 +7,29 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/pkg/errors"
 
 	abci "github.com/chainpoint/tendermint/abci/types"
-	cfg "github.com/chainpoint/tendermint/config"
-	auto "github.com/chainpoint/tendermint/libs/autofile"
 	"github.com/chainpoint/tendermint/libs/clist"
-	cmn "github.com/chainpoint/tendermint/libs/common"
 	"github.com/chainpoint/tendermint/libs/log"
 	"github.com/chainpoint/tendermint/proxy"
 	"github.com/chainpoint/tendermint/types"
 )
 
-// PreCheckFunc is an optional filter executed before CheckTx and rejects
-// transaction if false is returned. An example would be to ensure that a
-// transaction doesn't exceeded the block size.
-type PreCheckFunc func(types.Tx) error
-
-// PostCheckFunc is an optional filter executed after CheckTx and rejects
-// transaction if false is returned. An example would be to ensure a
-// transaction doesn't require more gas than available for the block.
-type PostCheckFunc func(types.Tx, *abci.ResponseCheckTx) error
-
-// TxInfo are parameters that get passed when attempting to add a tx to the
+// TxInfo are parameters that get passed when attempting to add a msg to the
 // mempool.
 type TxInfo struct {
 	// We don't use p2p.ID here because it's too big. The gain is to store max 2
-	// bytes with each tx to identify the sender rather than 20 bytes.
+	// bytes with each msg to identify the sender rather than 20 bytes.
 	PeerID uint16
 }
 
 /*
 
-The mempool pushes new txs onto the proxyAppConn.
+The mempool pushes new msgs onto the proxyAppConn.
 It gets a stream of (req, res) tuples from the proxy.
-The mempool stores good txs in a concurrent linked-list.
+The mempool stores good msgs in a concurrent linked-list.
 
 Multiple concurrent go-routines can traverse this linked-list
 safely by calling .NextWait() on each element.
@@ -51,107 +37,38 @@ safely by calling .NextWait() on each element.
 So we have several go-routines:
 1. Consensus calling Update() and Reap() synchronously
 2. Many mempool reactor's peer routines calling CheckTx()
-3. Many mempool reactor's peer routines traversing the txs linked list
+3. Many mempool reactor's peer routines traversing the msgs linked list
 4. Another goroutine calling GarbageCollectTxs() periodically
 
 To manage these goroutines, there are three methods of locking.
-1. Mutations to the linked-list is protected by an internal mtx (CList is goroutine-safe)
+1. Mutations to the linked-list is protected by an internal mmsg (CList is goroutine-safe)
 2. Mutations to the linked-list elements are atomic
-3. CheckTx() calls can be paused upon Update() and Reap(), protected by .proxyMtx
+3. CheckTx() calls can be paused upon Update() and Reap(), protected by .proxyMmsg
 
-Garbage collection of old elements from mempool.txs is handlde via
+Garbage collection of old elements from mempool.msgs is handlde via
 the DetachPrev() call, which makes old elements not reachable by
-peer broadcastTxRoutine() automatically garbage collected.
+peer broadcastMsgRoutine() automatically garbage collected.
 
 TODO: Better handle abci client errors. (make it automatically handle connection errors)
 
 */
 
 var (
-	// ErrTxInCache is returned to the client if we saw tx earlier
+	// ErrTxInCache is returned to the client if we saw msg earlier
 	ErrTxInCache = errors.New("Tx already exists in cache")
 
-	// ErrTxTooLarge means the tx is too big to be sent in a message to other peers
+	// ErrTxTooLarge means the msg is too big to be sent in a message to other peers
 	ErrTxTooLarge = fmt.Errorf("Tx too large. Max size is %d", maxTxSize)
 )
 
-// ErrMempoolIsFull means Tendermint & an application can't handle that much load
-type ErrMempoolIsFull struct {
-	numTxs int
-	maxTxs int
-
-	txsBytes    int64
-	maxTxsBytes int64
-}
-
-func (e ErrMempoolIsFull) Error() string {
-	return fmt.Sprintf(
-		"Gossip is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
-		e.numTxs, e.maxTxs,
-		e.txsBytes, e.maxTxsBytes)
-}
-
-// ErrPreCheck is returned when tx is too big
-type ErrPreCheck struct {
-	Reason error
-}
-
-func (e ErrPreCheck) Error() string {
-	return e.Reason.Error()
-}
-
-// IsPreCheckError returns true if err is due to pre check failure.
-func IsPreCheckError(err error) bool {
-	_, ok := err.(ErrPreCheck)
-	return ok
-}
-
-// PreCheckAminoMaxBytes checks that the size of the transaction plus the amino
-// overhead is smaller or equal to the expected maxBytes.
-func PreCheckAminoMaxBytes(maxBytes int64) PreCheckFunc {
-	return func(tx types.Tx) error {
-		// We have to account for the amino overhead in the tx size as well
-		// NOTE: fieldNum = 1 as types.Block.Data contains Txs []Tx as first field.
-		// If this field order ever changes this needs to updated here accordingly.
-		// NOTE: if some []Tx are encoded without a parenting struct, the
-		// fieldNum is also equal to 1.
-		aminoOverhead := types.ComputeAminoOverhead(tx, 1)
-		txSize := int64(len(tx)) + aminoOverhead
-		if txSize > maxBytes {
-			return fmt.Errorf("Tx size (including amino overhead) is too big: %d, max: %d",
-				txSize, maxBytes)
-		}
-		return nil
-	}
-}
-
-// PostCheckMaxGas checks that the wanted gas is smaller or equal to the passed
-// maxGas. Returns nil if maxGas is -1.
-func PostCheckMaxGas(maxGas int64) PostCheckFunc {
-	return func(tx types.Tx, res *abci.ResponseCheckTx) error {
-		if maxGas == -1 {
-			return nil
-		}
-		if res.GasWanted < 0 {
-			return fmt.Errorf("gas wanted %d is negative",
-				res.GasWanted)
-		}
-		if res.GasWanted > maxGas {
-			return fmt.Errorf("gas wanted %d is greater than max gas %d",
-				res.GasWanted, maxGas)
-		}
-		return nil
-	}
-}
-
 // TxID is the hex encoded hash of the bytes as a types.Tx.
-func TxID(tx []byte) string {
-	return fmt.Sprintf("%X", types.Tx(tx).Hash())
+func TxID(msg []byte) string {
+	return fmt.Sprintf("%X", types.Tx(msg).Hash())
 }
 
-// txKey is the fixed length array sha256 hash used as the key in maps.
-func txKey(tx types.Tx) [sha256.Size]byte {
-	return sha256.Sum256(tx)
+// msgKey is the fixed length array sha256 hash used as the key in maps.
+func msgKey(msg types.Tx) [sha256.Size]byte {
+	return sha256.Sum256(msg)
 }
 
 // Gossip is an ordered in-memory pool for transactions before they are proposed in a consensus
@@ -159,59 +76,46 @@ func txKey(tx types.Tx) [sha256.Size]byte {
 // added to the pool. The Gossip uses a concurrent list structure for storing transactions that
 // can be efficiently accessed by multiple concurrent readers.
 type Gossip struct {
-	config *cfg.MempoolConfig
-
-	proxyMtx     sync.Mutex
+	proxyMmsg     sync.Mutex
 	proxyAppConn proxy.AppConnGossip
-	txs          *clist.CList // concurrent linked-list of good txs
-	preCheck     PreCheckFunc
-	postCheck    PostCheckFunc
+	msgs          *clist.CList // concurrent linked-list of good msgs
 
-	// Track whether we're rechecking txs.
+	// Track whether we're rechecking msgs.
 	// These are not protected by a mutex and are expected to be mutated
 	// in serial (ie. by abci responses which are called in serial).
 	recheckCursor *clist.CElement // next expected response
 	recheckEnd    *clist.CElement // re-checking stops here
 
-	// notify listeners (ie. consensus) when txs are available
+	// notify listeners (ie. consensus) when msgs are available
 	notifiedTxsAvailable bool
-	txsAvailable         chan struct{} // fires once for each height, when the mempool is not empty
+	msgsAvailable         chan struct{} // fires once for each height, when the mempool is not empty
 
-	// Map for quick access to txs to record sender in CheckTx.
-	// txsMap: txKey -> CElement
-	txsMap sync.Map
+	// Map for quick access to msgs to record sender in CheckTx.
+	// msgsMap: msgKey -> CElement
+	msgsMap sync.Map
 
 	// Atomic integers
 	height     int64 // the last block Update()'d to
-	rechecking int32 // for re-checking filtered txs on Update()
-	txsBytes   int64 // total size of mempool, in bytes
+	rechecking int32 // for re-checking filtered msgs on Update()
+	msgsBytes   int64 // total size of mempool, in bytes
 
-	// Keep a cache of already-seen txs.
+	// Keep a cache of already-seen msgs.
 	// This reduces the pressure on the proxyApp.
-	cache txCache
-
-	// A log of mempool txs
-	wal *auto.AutoFile
+	cache msgCache
 
 	logger log.Logger
 
 	metrics *Metrics
 }
 
-// MempoolOption sets an optional parameter on the Gossip.
-type MempoolOption func(*Gossip)
-
 // NewMempool returns a new Gossip with the given configuration and connection to an application.
-func NewMempool(
-	config *cfg.MempoolConfig,
+func NewGossip(
 	proxyAppConn proxy.AppConnGossip,
 	height int64,
-	options ...MempoolOption,
 ) *Gossip {
-	mempool := &Gossip{
-		config:        config,
+	gossip := &Gossip{
 		proxyAppConn:  proxyAppConn,
-		txs:           clist.New(),
+		msgs:           clist.New(),
 		height:        height,
 		rechecking:    0,
 		recheckCursor: nil,
@@ -219,129 +123,76 @@ func NewMempool(
 		logger:        log.NewNopLogger(),
 		metrics:       NopMetrics(),
 	}
-	if config.CacheSize > 0 {
-		mempool.cache = newMapTxCache(config.CacheSize)
-	} else {
-		mempool.cache = nopTxCache{}
-	}
-	proxyAppConn.SetResponseCallback(mempool.globalCb)
-	for _, option := range options {
-		option(mempool)
-	}
-	return mempool
+	gossip.cache = newMapTxCache(10000)
+	proxyAppConn.SetResponseCallback(gossip.globalCb)
+	return gossip
 }
 
 // EnableTxsAvailable initializes the TxsAvailable channel,
 // ensuring it will trigger once every height when transactions are available.
 // NOTE: not thread safe - should only be called once, on startup
-func (mem *Gossip) EnableTxsAvailable() {
-	mem.txsAvailable = make(chan struct{}, 1)
+func (gos *Gossip) EnableTxsAvailable() {
+	gos.msgsAvailable = make(chan struct{}, 1)
 }
 
 // SetLogger sets the Logger.
-func (mem *Gossip) SetLogger(l log.Logger) {
-	mem.logger = l
-}
-
-// WithPreCheck sets a filter for the mempool to reject a tx if f(tx) returns
-// false. This is ran before CheckTx.
-func WithPreCheck(f PreCheckFunc) MempoolOption {
-	return func(mem *Gossip) { mem.preCheck = f }
-}
-
-// WithPostCheck sets a filter for the mempool to reject a tx if f(tx) returns
-// false. This is ran after CheckTx.
-func WithPostCheck(f PostCheckFunc) MempoolOption {
-	return func(mem *Gossip) { mem.postCheck = f }
-}
-
-// WithMetrics sets the metrics.
-func WithMetrics(metrics *Metrics) MempoolOption {
-	return func(mem *Gossip) { mem.metrics = metrics }
-}
-
-// InitWAL creates a directory for the WAL file and opens a file itself.
-//
-// *panics* if can't create directory or open file.
-// *not thread safe*
-func (mem *Gossip) InitWAL() {
-	walDir := mem.config.WalDir()
-	err := cmn.EnsureDir(walDir, 0700)
-	if err != nil {
-		panic(errors.Wrap(err, "Error ensuring Gossip WAL dir"))
-	}
-	af, err := auto.OpenAutoFile(walDir + "/wal")
-	if err != nil {
-		panic(errors.Wrap(err, "Error opening Gossip WAL file"))
-	}
-	mem.wal = af
-}
-
-// CloseWAL closes and discards the underlying WAL file.
-// Any further writes will not be relayed to disk.
-func (mem *Gossip) CloseWAL() {
-	mem.proxyMtx.Lock()
-	defer mem.proxyMtx.Unlock()
-
-	if err := mem.wal.Close(); err != nil {
-		mem.logger.Error("Error closing WAL", "err", err)
-	}
-	mem.wal = nil
+func (gos *Gossip) SetLogger(l log.Logger) {
+	gos.logger = l
 }
 
 // Lock locks the mempool. The consensus must be able to hold lock to safely update.
-func (mem *Gossip) Lock() {
-	mem.proxyMtx.Lock()
+func (gos *Gossip) Lock() {
+	gos.proxyMmsg.Lock()
 }
 
 // Unlock unlocks the mempool.
-func (mem *Gossip) Unlock() {
-	mem.proxyMtx.Unlock()
+func (gos *Gossip) Unlock() {
+	gos.proxyMmsg.Unlock()
 }
 
 // Size returns the number of transactions in the mempool.
-func (mem *Gossip) Size() int {
-	return mem.txs.Len()
+func (gos *Gossip) Size() int {
+	return gos.msgs.Len()
 }
 
-// TxsBytes returns the total size of all txs in the mempool.
-func (mem *Gossip) TxsBytes() int64 {
-	return atomic.LoadInt64(&mem.txsBytes)
+// TxsBytes returns the total size of all msgs in the mempool.
+func (gos *Gossip) TxsBytes() int64 {
+	return atomic.LoadInt64(&gos.msgsBytes)
 }
 
 // FlushAppConn flushes the mempool connection to ensure async reqResCb calls are
 // done. E.g. from CheckTx.
-func (mem *Gossip) FlushAppConn() error {
-	return mem.proxyAppConn.FlushSync()
+func (gos *Gossip) FlushAppConn() error {
+	return gos.proxyAppConn.FlushSync()
 }
 
 // Flush removes all transactions from the mempool and cache
-func (mem *Gossip) Flush() {
-	mem.proxyMtx.Lock()
-	defer mem.proxyMtx.Unlock()
+func (gos *Gossip) Flush() {
+	gos.proxyMmsg.Lock()
+	defer gos.proxyMmsg.Unlock()
 
-	mem.cache.Reset()
+	gos.cache.Reset()
 
-	for e := mem.txs.Front(); e != nil; e = e.Next() {
-		mem.txs.Remove(e)
+	for e := gos.msgs.Front(); e != nil; e = e.Next() {
+		gos.msgs.Remove(e)
 		e.DetachPrev()
 	}
 
-	mem.txsMap = sync.Map{}
-	_ = atomic.SwapInt64(&mem.txsBytes, 0)
+	gos.msgsMap = sync.Map{}
+	_ = atomic.SwapInt64(&gos.msgsBytes, 0)
 }
 
 // TxsFront returns the first transaction in the ordered list for peer
 // goroutines to call .NextWait() on.
-func (mem *Gossip) TxsFront() *clist.CElement {
-	return mem.txs.Front()
+func (gos *Gossip) TxsFront() *clist.CElement {
+	return gos.msgs.Front()
 }
 
 // TxsWaitChan returns a channel to wait on transactions. It will be closed
-// once the mempool is not empty (ie. the internal `mem.txs` has at least one
+// once the mempool is not empty (ie. the internal `gos.msgs` has at least one
 // element)
-func (mem *Gossip) TxsWaitChan() <-chan struct{} {
-	return mem.txs.WaitChan()
+func (gos *Gossip) TxsWaitChan() <-chan struct{} {
+	return gos.msgs.WaitChan()
 }
 
 // CheckTx executes a new transaction against the application to determine its validity
@@ -350,125 +201,86 @@ func (mem *Gossip) TxsWaitChan() <-chan struct{} {
 // cb: A callback from the CheckTx command.
 //     It gets called from another goroutine.
 // CONTRACT: Either cb will get called, or err returned.
-func (mem *Gossip) CheckTx(tx types.Tx, cb func(*abci.Response)) (err error) {
-	return mem.CheckTxWithInfo(tx, cb, TxInfo{PeerID: UnknownPeerID})
+func (gos *Gossip) DeliverMsg(msg types.Tx, cb func(*abci.Response)) (err error) {
+	return gos.DeliverMsgWithInfo(msg, cb, TxInfo{PeerID: UnknownPeerID})
 }
 
-// CheckTxWithInfo performs the same operation as CheckTx, but with extra meta data about the tx.
+// CheckTxWithInfo performs the same operation as CheckTx, but with extra meta data about the msg.
 // Currently this metadata is the peer who sent it,
-// used to prevent the tx from being gossiped back to them.
-func (mem *Gossip) CheckTxWithInfo(tx types.Tx, cb func(*abci.Response), txInfo TxInfo) (err error) {
-	mem.proxyMtx.Lock()
+// used to prevent the msg from being gossiped back to them.
+func (gos *Gossip) DeliverMsgWithInfo(msg types.Tx, cb func(*abci.Response), msgInfo TxInfo) (err error) {
+	gos.proxyMmsg.Lock()
 	// use defer to unlock mutex because application (*local client*) might panic
-	defer mem.proxyMtx.Unlock()
-
-	var (
-		memSize  = mem.Size()
-		txsBytes = mem.TxsBytes()
-	)
-	if memSize >= mem.config.Size ||
-		int64(len(tx))+txsBytes > mem.config.MaxTxsBytes {
-		return ErrMempoolIsFull{
-			memSize, mem.config.Size,
-			txsBytes, mem.config.MaxTxsBytes}
-	}
-
-	// The size of the corresponding amino-encoded TxMessage
-	// can't be larger than the maxMsgSize, otherwise we can't
-	// relay it to peers.
-	if len(tx) > maxTxSize {
-		return ErrTxTooLarge
-	}
-
-	if mem.preCheck != nil {
-		if err := mem.preCheck(tx); err != nil {
-			return ErrPreCheck{err}
-		}
-	}
-
+	defer gos.proxyMmsg.Unlock()
 	// CACHE
-	if !mem.cache.Push(tx) {
-		// Record a new sender for a tx we've already seen.
-		// Note it's possible a tx is still in the cache but no longer in the mempool
-		// (eg. after committing a block, txs are removed from mempool but not cache),
-		// so we only record the sender for txs still in the mempool.
-		if e, ok := mem.txsMap.Load(txKey(tx)); ok {
+	if !gos.cache.Push(msg) {
+		// Record a new sender for a msg we've already seen.
+		// Note it's possible a msg is still in the cache but no longer in the mempool
+		// (eg. after committing a block, msgs are removed from mempool but not cache),
+		// so we only record the sender for msgs still in the mempool.
+		if e, ok := gos.msgsMap.Load(msgKey(msg)); ok {
 			memTx := e.(*clist.CElement).Value.(*mempoolTx)
-			if _, loaded := memTx.senders.LoadOrStore(txInfo.PeerID, true); loaded {
+			if _, loaded := memTx.senders.LoadOrStore(msgInfo.PeerID, true); loaded {
 				// TODO: consider punishing peer for dups,
-				// its non-trivial since invalid txs can become valid,
-				// but they can spam the same tx with little cost to them atm.
+				// its non-trivial since invalid msgs can become valid,
+				// but they can spam the same msg with little cost to them atm.
 			}
 		}
 
 		return ErrTxInCache
 	}
-	// END CACHE
-
-	// WAL
-	if mem.wal != nil {
-		// TODO: Notify administrators when WAL fails
-		_, err := mem.wal.Write([]byte(tx))
-		if err != nil {
-			mem.logger.Error("Error writing to WAL", "err", err)
-		}
-		_, err = mem.wal.Write([]byte("\n"))
-		if err != nil {
-			mem.logger.Error("Error writing to WAL", "err", err)
-		}
-	}
 	// END WAL
 
-	// NOTE: proxyAppConn may error if tx buffer is full
-	if err = mem.proxyAppConn.Error(); err != nil {
+	// NOTE: proxyAppConn may error if msg buffer is full
+	if err = gos.proxyAppConn.Error(); err != nil {
 		return err
 	}
 
-	reqRes := mem.proxyAppConn.DeliverMsgAsync(tx)
-	reqRes.SetCallback(mem.reqResCb(tx, txInfo.PeerID, cb))
+	reqRes := gos.proxyAppConn.DeliverMsgAsync(msg)
+	reqRes.SetCallback(gos.reqResCb(msg, msgInfo.PeerID, cb))
 
 	return nil
 }
 
 // Global callback that will be called after every ABCI response.
 // Having a single global callback avoids needing to set a callback for each request.
-// However, processing the checkTx response requires the peerID (so we can track which txs we heard from who),
+// However, processing the checkTx response requires the peerID (so we can track which msgs we heard from who),
 // and peerID is not included in the ABCI request, so we have to set request-specific callbacks that
 // include this information. If we're not in the midst of a recheck, this function will just return,
 // so the request specific callback can do the work.
 // When rechecking, we don't need the peerID, so the recheck callback happens here.
-func (mem *Gossip) globalCb(req *abci.Request, res *abci.Response) {
-	if mem.recheckCursor == nil {
+func (gos *Gossip) globalCb(req *abci.Request, res *abci.Response) {
+	if gos.recheckCursor == nil {
 		return
 	}
 
-	mem.metrics.RecheckTimes.Add(1)
-	mem.resCbRecheck(req, res)
+	gos.metrics.RecheckTimes.Add(1)
+	gos.resCbRecheck(req, res)
 
 	// update metrics
-	mem.metrics.Size.Set(float64(mem.Size()))
+	gos.metrics.Size.Set(float64(gos.Size()))
 }
 
 // Request specific callback that should be set on individual reqRes objects
 // to incorporate local information when processing the response.
-// This allows us to track the peer that sent us this tx, so we can avoid sending it back to them.
+// This allows us to track the peer that sent us this msg, so we can avoid sending it back to them.
 // NOTE: alternatively, we could include this information in the ABCI request itself.
 //
 // External callers of CheckTx, like the RPC, can also pass an externalCb through here that is called
 // when all other response processing is complete.
 //
-// Used in CheckTxWithInfo to record PeerID who sent us the tx.
-func (mem *Gossip) reqResCb(tx []byte, peerID uint16, externalCb func(*abci.Response)) func(res *abci.Response) {
+// Used in CheckTxWithInfo to record PeerID who sent us the msg.
+func (gos *Gossip) reqResCb(msg []byte, peerID uint16, externalCb func(*abci.Response)) func(res *abci.Response) {
 	return func(res *abci.Response) {
-		if mem.recheckCursor != nil {
+		if gos.recheckCursor != nil {
 			// this should never happen
 			panic("recheck cursor is not nil in reqResCb")
 		}
 
-		mem.resCbFirstTime(tx, peerID, res)
+		gos.resCbFirstTime(msg, peerID, res)
 
 		// update metrics
-		mem.metrics.Size.Set(float64(mem.Size()))
+		gos.metrics.Size.Set(float64(gos.Size()))
 
 		// passed in by the caller of CheckTx, eg. the RPC
 		if externalCb != nil {
@@ -478,106 +290,97 @@ func (mem *Gossip) reqResCb(tx []byte, peerID uint16, externalCb func(*abci.Resp
 }
 
 // Called from:
-//  - resCbFirstTime (lock not held) if tx is valid
-func (mem *Gossip) addTx(memTx *mempoolTx) {
-	e := mem.txs.PushBack(memTx)
-	mem.txsMap.Store(txKey(memTx.tx), e)
-	atomic.AddInt64(&mem.txsBytes, int64(len(memTx.tx)))
-	mem.metrics.TxSizeBytes.Observe(float64(len(memTx.tx)))
+//  - resCbFirstTime (lock not held) if msg is valid
+func (gos *Gossip) addTx(memTx *mempoolTx) {
+	e := gos.msgs.PushBack(memTx)
+	gos.msgsMap.Store(msgKey(memTx.msg), e)
+	atomic.AddInt64(&gos.msgsBytes, int64(len(memTx.msg)))
+	gos.metrics.TxSizeBytes.Observe(float64(len(memTx.msg)))
 }
 
 // Called from:
-//  - Update (lock held) if tx was committed
-// 	- resCbRecheck (lock not held) if tx was invalidated
-func (mem *Gossip) removeTx(tx types.Tx, elem *clist.CElement, removeFromCache bool) {
-	mem.txs.Remove(elem)
+//  - Update (lock held) if msg was committed
+// 	- resCbRecheck (lock not held) if msg was invalidated
+func (gos *Gossip) removeTx(msg types.Tx, elem *clist.CElement, removeFromCache bool) {
+	gos.msgs.Remove(elem)
 	elem.DetachPrev()
-	mem.txsMap.Delete(txKey(tx))
-	atomic.AddInt64(&mem.txsBytes, int64(-len(tx)))
+	gos.msgsMap.Delete(msgKey(msg))
+	atomic.AddInt64(&gos.msgsBytes, int64(-len(msg)))
 
 	if removeFromCache {
-		mem.cache.Remove(tx)
+		gos.cache.Remove(msg)
 	}
 }
 
-// callback, which is called after the app checked the tx for the first time.
+// callback, which is called after the app checked the msg for the first time.
 //
-// The case where the app checks the tx for the second and subsequent times is
+// The case where the app checks the msg for the second and subsequent times is
 // handled by the resCbRecheck callback.
-func (mem *Gossip) resCbFirstTime(tx []byte, peerID uint16, res *abci.Response) {
+func (gos *Gossip) resCbFirstTime(msg []byte, peerID uint16, res *abci.Response) {
 	switch r := res.Value.(type) {
-	case *abci.Response_CheckTx:
-		var postCheckErr error
-		if mem.postCheck != nil {
-			postCheckErr = mem.postCheck(tx, r.CheckTx)
-		}
-		if (r.CheckTx.Code == abci.CodeTypeOK) && postCheckErr == nil {
+	case *abci.Response_DeliverMsg:
+		if (r.DeliverMsg.Code == abci.CodeTypeOK) {
 			memTx := &mempoolTx{
-				height:    mem.height,
-				gasWanted: r.CheckTx.GasWanted,
-				tx:        tx,
+				height:    gos.height,
+				msg:        msg,
 			}
 			memTx.senders.Store(peerID, true)
-			mem.addTx(memTx)
-			mem.logger.Info("Added good transaction",
-				"tx", TxID(tx),
+			gos.addTx(memTx)
+			gos.logger.Info("Added good message",
+				"msg", TxID(msg),
 				"res", r,
 				"height", memTx.height,
-				"total", mem.Size(),
+				"total", gos.Size(),
 			)
-			mem.notifyTxsAvailable()
+			gos.notifyTxsAvailable()
 		} else {
 			// ignore bad transaction
-			mem.logger.Info("Rejected bad transaction", "tx", TxID(tx), "res", r, "err", postCheckErr)
-			mem.metrics.FailedTxs.Add(1)
+			gos.logger.Info("Rejected bad message", "msg", TxID(msg), "res", r, "err")
+			gos.metrics.FailedTxs.Add(1)
 			// remove from cache (it might be good later)
-			mem.cache.Remove(tx)
+			gos.cache.Remove(msg)
 		}
 	default:
 		// ignore other messages
 	}
 }
 
-// callback, which is called after the app rechecked the tx.
+// callback, which is called after the app rechecked the msg.
 //
-// The case where the app checks the tx for the first time is handled by the
+// The case where the app checks the msg for the first time is handled by the
 // resCbFirstTime callback.
-func (mem *Gossip) resCbRecheck(req *abci.Request, res *abci.Response) {
+func (gos *Gossip) resCbRecheck(req *abci.Request, res *abci.Response) {
 	switch r := res.Value.(type) {
 	case *abci.Response_CheckTx:
-		tx := req.GetCheckTx().Tx
-		memTx := mem.recheckCursor.Value.(*mempoolTx)
-		if !bytes.Equal(tx, memTx.tx) {
+		msg := req.GetCheckTx().Tx
+		memTx := gos.recheckCursor.Value.(*mempoolTx)
+		if !bytes.Equal(msg, memTx.msg) {
 			panic(fmt.Sprintf(
-				"Unexpected tx response from proxy during recheck\nExpected %X, got %X",
-				memTx.tx,
-				tx))
+				"Unexpected msg response from proxy during recheck\nExpected %X, got %X",
+				memTx.msg,
+				msg))
 		}
-		var postCheckErr error
-		if mem.postCheck != nil {
-			postCheckErr = mem.postCheck(tx, r.CheckTx)
-		}
-		if (r.CheckTx.Code == abci.CodeTypeOK) && postCheckErr == nil {
+		if (r.CheckTx.Code == abci.CodeTypeOK) {
 			// Good, nothing to do.
 		} else {
 			// Tx became invalidated due to newly committed block.
-			mem.logger.Info("Tx is no longer valid", "tx", TxID(tx), "res", r, "err", postCheckErr)
-			// NOTE: we remove tx from the cache because it might be good later
-			mem.removeTx(tx, mem.recheckCursor, true)
+			gos.logger.Info("Tx is no longer valid", "msg", TxID(msg), "res", r, "err")
+			// NOTE: we remove msg from the cache because it might be good later
+			gos.removeTx(msg, gos.recheckCursor, true)
 		}
-		if mem.recheckCursor == mem.recheckEnd {
-			mem.recheckCursor = nil
+		if gos.recheckCursor == gos.recheckEnd {
+			gos.recheckCursor = nil
 		} else {
-			mem.recheckCursor = mem.recheckCursor.Next()
+			gos.recheckCursor = gos.recheckCursor.Next()
 		}
-		if mem.recheckCursor == nil {
+		if gos.recheckCursor == nil {
 			// Done!
-			atomic.StoreInt32(&mem.rechecking, 0)
-			mem.logger.Info("Done rechecking txs")
+			atomic.StoreInt32(&gos.rechecking, 0)
+			gos.logger.Info("Done rechecking msgs")
 
-			// incase the recheck removed all txs
-			if mem.Size() > 0 {
-				mem.notifyTxsAvailable()
+			// incase the recheck removed all msgs
+			if gos.Size() > 0 {
+				gos.notifyTxsAvailable()
 			}
 		}
 	default:
@@ -588,185 +391,71 @@ func (mem *Gossip) resCbRecheck(req *abci.Request, res *abci.Response) {
 // TxsAvailable returns a channel which fires once for every height,
 // and only when transactions are available in the mempool.
 // NOTE: the returned channel may be nil if EnableTxsAvailable was not called.
-func (mem *Gossip) TxsAvailable() <-chan struct{} {
-	return mem.txsAvailable
+func (gos *Gossip) TxsAvailable() <-chan struct{} {
+	return gos.msgsAvailable
 }
 
-func (mem *Gossip) notifyTxsAvailable() {
-	if mem.Size() == 0 {
-		panic("notified txs available but mempool is empty!")
+func (gos *Gossip) notifyTxsAvailable() {
+	if gos.Size() == 0 {
+		panic("notified msgs available but mempool is empty!")
 	}
-	if mem.txsAvailable != nil && !mem.notifiedTxsAvailable {
+	if gos.msgsAvailable != nil && !gos.notifiedTxsAvailable {
 		// channel cap is 1, so this will send once
-		mem.notifiedTxsAvailable = true
+		gos.notifiedTxsAvailable = true
 		select {
-		case mem.txsAvailable <- struct{}{}:
+		case gos.msgsAvailable <- struct{}{}:
 		default:
 		}
 	}
 }
 
-// ReapMaxBytesMaxGas reaps transactions from the mempool up to maxBytes bytes total
-// with the condition that the total gasWanted must be less than maxGas.
-// If both maxes are negative, there is no cap on the size of all returned
-// transactions (~ all available transactions).
-func (mem *Gossip) ReapMaxBytesMaxGas(maxBytes, maxGas int64) types.Txs {
-	mem.proxyMtx.Lock()
-	defer mem.proxyMtx.Unlock()
-
-	for atomic.LoadInt32(&mem.rechecking) > 0 {
-		// TODO: Something better?
-		time.Sleep(time.Millisecond * 10)
-	}
-
-	var totalBytes int64
-	var totalGas int64
-	// TODO: we will get a performance boost if we have a good estimate of avg
-	// size per tx, and set the initial capacity based off of that.
-	// txs := make([]types.Tx, 0, cmn.MinInt(mem.txs.Len(), max/mem.avgTxSize))
-	txs := make([]types.Tx, 0, mem.txs.Len())
-	for e := mem.txs.Front(); e != nil; e = e.Next() {
-		memTx := e.Value.(*mempoolTx)
-		// Check total size requirement
-		aminoOverhead := types.ComputeAminoOverhead(memTx.tx, 1)
-		if maxBytes > -1 && totalBytes+int64(len(memTx.tx))+aminoOverhead > maxBytes {
-			return txs
-		}
-		totalBytes += int64(len(memTx.tx)) + aminoOverhead
-		// Check total gas requirement.
-		// If maxGas is negative, skip this check.
-		// Since newTotalGas < masGas, which
-		// must be non-negative, it follows that this won't overflow.
-		newTotalGas := totalGas + memTx.gasWanted
-		if maxGas > -1 && newTotalGas > maxGas {
-			return txs
-		}
-		totalGas = newTotalGas
-		txs = append(txs, memTx.tx)
-	}
-	return txs
-}
-
-// ReapMaxTxs reaps up to max transactions from the mempool.
-// If max is negative, there is no cap on the size of all returned
-// transactions (~ all available transactions).
-func (mem *Gossip) ReapMaxTxs(max int) types.Txs {
-	mem.proxyMtx.Lock()
-	defer mem.proxyMtx.Unlock()
-
-	if max < 0 {
-		max = mem.txs.Len()
-	}
-
-	for atomic.LoadInt32(&mem.rechecking) > 0 {
-		// TODO: Something better?
-		time.Sleep(time.Millisecond * 10)
-	}
-
-	txs := make([]types.Tx, 0, cmn.MinInt(mem.txs.Len(), max))
-	for e := mem.txs.Front(); e != nil && len(txs) <= max; e = e.Next() {
-		memTx := e.Value.(*mempoolTx)
-		txs = append(txs, memTx.tx)
-	}
-	return txs
-}
-
-// Update informs the mempool that the given txs were committed and can be discarded.
-// NOTE: this should be called *after* block is committed by consensus.
-// NOTE: unsafe; Lock/Unlock must be managed by caller
-func (mem *Gossip) Update(
-	height int64,
-	txs types.Txs,
-	preCheck PreCheckFunc,
-	postCheck PostCheckFunc,
-) error {
-	// Set height
-	mem.height = height
-	mem.notifiedTxsAvailable = false
-
-	if preCheck != nil {
-		mem.preCheck = preCheck
-	}
-	if postCheck != nil {
-		mem.postCheck = postCheck
-	}
-
-	// Add committed transactions to cache (if missing).
-	for _, tx := range txs {
-		_ = mem.cache.Push(tx)
-	}
-
-	// Remove committed transactions.
-	txsLeft := mem.removeTxs(txs)
-
-	// Either recheck non-committed txs to see if they became invalid
-	// or just notify there're some txs left.
-	if len(txsLeft) > 0 {
-		if mem.config.Recheck {
-			mem.logger.Info("Recheck txs", "numtxs", len(txsLeft), "height", height)
-			mem.recheckTxs(txsLeft)
-			// At this point, mem.txs are being rechecked.
-			// mem.recheckCursor re-scans mem.txs and possibly removes some txs.
-			// Before mem.Reap(), we should wait for mem.recheckCursor to be nil.
-		} else {
-			mem.notifyTxsAvailable()
-		}
-	}
-
-	// Update metrics
-	mem.metrics.Size.Set(float64(mem.Size()))
-
-	return nil
-}
-
-func (mem *Gossip) removeTxs(txs types.Txs) []types.Tx {
+func (gos *Gossip) removeTxs(msgs types.Txs) []types.Tx {
 	// Build a map for faster lookups.
-	txsMap := make(map[string]struct{}, len(txs))
-	for _, tx := range txs {
-		txsMap[string(tx)] = struct{}{}
+	msgsMap := make(map[string]struct{}, len(msgs))
+	for _, msg := range msgs {
+		msgsMap[string(msg)] = struct{}{}
 	}
 
-	txsLeft := make([]types.Tx, 0, mem.txs.Len())
-	for e := mem.txs.Front(); e != nil; e = e.Next() {
+	msgsLeft := make([]types.Tx, 0, gos.msgs.Len())
+	for e := gos.msgs.Front(); e != nil; e = e.Next() {
 		memTx := e.Value.(*mempoolTx)
-		// Remove the tx if it's already in a block.
-		if _, ok := txsMap[string(memTx.tx)]; ok {
-			// NOTE: we don't remove committed txs from the cache.
-			mem.removeTx(memTx.tx, e, false)
+		// Remove the msg if it's already in a block.
+		if _, ok := msgsMap[string(memTx.msg)]; ok {
+			// NOTE: we don't remove committed msgs from the cache.
+			gos.removeTx(memTx.msg, e, false)
 
 			continue
 		}
-		txsLeft = append(txsLeft, memTx.tx)
+		msgsLeft = append(msgsLeft, memTx.msg)
 	}
-	return txsLeft
+	return msgsLeft
 }
 
-// NOTE: pass in txs because mem.txs can mutate concurrently.
-func (mem *Gossip) recheckTxs(txs []types.Tx) {
-	if len(txs) == 0 {
+// NOTE: pass in msgs because gos.msgs can mutate concurrently.
+func (gos *Gossip) recheckTxs(msgs []types.Tx) {
+	if len(msgs) == 0 {
 		return
 	}
-	atomic.StoreInt32(&mem.rechecking, 1)
-	mem.recheckCursor = mem.txs.Front()
-	mem.recheckEnd = mem.txs.Back()
+	atomic.StoreInt32(&gos.rechecking, 1)
+	gos.recheckCursor = gos.msgs.Front()
+	gos.recheckEnd = gos.msgs.Back()
 
-	// Push txs to proxyAppConn
+	// Push msgs to proxyAppConn
 	// NOTE: globalCb may be called concurrently.
-	for _, tx := range txs {
-		mem.proxyAppConn.DeliverMsgAsync(tx)
+	for _, msg := range msgs {
+		gos.proxyAppConn.DeliverMsgAsync(msg)
 	}
-	mem.proxyAppConn.FlushAsync()
+	gos.proxyAppConn.FlushAsync()
 }
 
 //--------------------------------------------------------------------------------
 
 // mempoolTx is a transaction that successfully ran
 type mempoolTx struct {
-	height    int64    // height that this tx had been validated in
-	gasWanted int64    // amount of gas this tx states it will require
-	tx        types.Tx //
+	height    int64    // height that this msg had been validated in
+	msg        types.Tx //
 
-	// ids of peers who've sent us this tx (as a map for quick lookups).
+	// ids of peers who've sent us this msg (as a map for quick lookups).
 	// senders: PeerID -> bool
 	senders sync.Map
 }
@@ -778,22 +467,22 @@ func (memTx *mempoolTx) Height() int64 {
 
 //--------------------------------------------------------------------------------
 
-type txCache interface {
+type msgCache interface {
 	Reset()
-	Push(tx types.Tx) bool
-	Remove(tx types.Tx)
+	Push(msg types.Tx) bool
+	Remove(msg types.Tx)
 }
 
 // mapTxCache maintains a LRU cache of transactions. This only stores the hash
-// of the tx, due to memory concerns.
+// of the msg, due to memory concerns.
 type mapTxCache struct {
-	mtx  sync.Mutex
+	mmsg  sync.Mutex
 	size int
 	map_ map[[sha256.Size]byte]*list.Element
 	list *list.List
 }
 
-var _ txCache = (*mapTxCache)(nil)
+var _ msgCache = (*mapTxCache)(nil)
 
 // newMapTxCache returns a new mapTxCache.
 func newMapTxCache(cacheSize int) *mapTxCache {
@@ -806,21 +495,21 @@ func newMapTxCache(cacheSize int) *mapTxCache {
 
 // Reset resets the cache to an empty state.
 func (cache *mapTxCache) Reset() {
-	cache.mtx.Lock()
+	cache.mmsg.Lock()
 	cache.map_ = make(map[[sha256.Size]byte]*list.Element, cache.size)
 	cache.list.Init()
-	cache.mtx.Unlock()
+	cache.mmsg.Unlock()
 }
 
-// Push adds the given tx to the cache and returns true. It returns
-// false if tx is already in the cache.
-func (cache *mapTxCache) Push(tx types.Tx) bool {
-	cache.mtx.Lock()
-	defer cache.mtx.Unlock()
+// Push adds the given msg to the cache and returns true. It returns
+// false if msg is already in the cache.
+func (cache *mapTxCache) Push(msg types.Tx) bool {
+	cache.mmsg.Lock()
+	defer cache.mmsg.Unlock()
 
-	// Use the tx hash in the cache
-	txHash := txKey(tx)
-	if moved, exists := cache.map_[txHash]; exists {
+	// Use the msg hash in the cache
+	msgHash := msgKey(msg)
+	if moved, exists := cache.map_[msgHash]; exists {
 		cache.list.MoveToBack(moved)
 		return false
 	}
@@ -833,27 +522,27 @@ func (cache *mapTxCache) Push(tx types.Tx) bool {
 			cache.list.Remove(popped)
 		}
 	}
-	e := cache.list.PushBack(txHash)
-	cache.map_[txHash] = e
+	e := cache.list.PushBack(msgHash)
+	cache.map_[msgHash] = e
 	return true
 }
 
-// Remove removes the given tx from the cache.
-func (cache *mapTxCache) Remove(tx types.Tx) {
-	cache.mtx.Lock()
-	txHash := txKey(tx)
-	popped := cache.map_[txHash]
-	delete(cache.map_, txHash)
+// Remove removes the given msg from the cache.
+func (cache *mapTxCache) Remove(msg types.Tx) {
+	cache.mmsg.Lock()
+	msgHash := msgKey(msg)
+	popped := cache.map_[msgHash]
+	delete(cache.map_, msgHash)
 	if popped != nil {
 		cache.list.Remove(popped)
 	}
 
-	cache.mtx.Unlock()
+	cache.mmsg.Unlock()
 }
 
 type nopTxCache struct{}
 
-var _ txCache = (*nopTxCache)(nil)
+var _ msgCache = (*nopTxCache)(nil)
 
 func (nopTxCache) Reset()             {}
 func (nopTxCache) Push(types.Tx) bool { return true }

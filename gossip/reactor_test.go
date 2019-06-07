@@ -43,8 +43,8 @@ func mempoolLogger() log.Logger {
 }
 
 // connect N mempool reactors through N switches
-func makeAndConnectMempoolReactors(config *cfg.Config, N int) []*MempoolReactor {
-	reactors := make([]*MempoolReactor, N)
+func makeAndConnectMempoolReactors(config *cfg.Config, N int) []*GossipReactor {
+	reactors := make([]*GossipReactor, N)
 	logger := mempoolLogger()
 	for i := 0; i < N; i++ {
 		app := kvstore.NewKVStoreApplication()
@@ -65,7 +65,7 @@ func makeAndConnectMempoolReactors(config *cfg.Config, N int) []*MempoolReactor 
 }
 
 // wait for all txs on all reactors
-func waitForTxs(t *testing.T, txs types.Txs, reactors []*MempoolReactor) {
+func waitForTxs(t *testing.T, txs types.Txs, reactors []*GossipReactor) {
 	// wait for the txs in all mempools
 	wg := new(sync.WaitGroup)
 	for i := 0; i < len(reactors); i++ {
@@ -88,9 +88,9 @@ func waitForTxs(t *testing.T, txs types.Txs, reactors []*MempoolReactor) {
 }
 
 // wait for all txs on a single mempool
-func _waitForTxs(t *testing.T, wg *sync.WaitGroup, txs types.Txs, reactorIdx int, reactors []*MempoolReactor) {
+func _waitForTxs(t *testing.T, wg *sync.WaitGroup, txs types.Txs, reactorIdx int, reactors []*GossipReactor) {
 
-	mempool := reactors[reactorIdx].Mempool
+	mempool := reactors[reactorIdx].gossip
 	for mempool.Size() != len(txs) {
 		time.Sleep(time.Millisecond * 100)
 	}
@@ -103,9 +103,9 @@ func _waitForTxs(t *testing.T, wg *sync.WaitGroup, txs types.Txs, reactorIdx int
 }
 
 // ensure no txs on reactor after some timeout
-func ensureNoTxs(t *testing.T, reactor *MempoolReactor, timeout time.Duration) {
+func ensureNoTxs(t *testing.T, reactor *GossipReactor, timeout time.Duration) {
 	time.Sleep(timeout) // wait for the txs in all mempools
-	assert.Zero(t, reactor.Mempool.Size())
+	assert.Zero(t, reactor.gossip.Size())
 }
 
 const (
@@ -130,7 +130,7 @@ func TestReactorBroadcastTxMessage(t *testing.T) {
 
 	// send a bunch of txs to the first reactor's mempool
 	// and wait for them all to be received in the others
-	txs := checkTxs(t, reactors[0].Mempool, NUM_TXS, UnknownPeerID)
+	txs := checkTxs(t, reactors[0].gossip, NUM_TXS, UnknownPeerID)
 	waitForTxs(t, txs, reactors)
 }
 
@@ -146,7 +146,7 @@ func TestReactorNoBroadcastToSender(t *testing.T) {
 
 	// send a bunch of txs to the first reactor's mempool, claiming it came from peer
 	// ensure peer gets no txs
-	checkTxs(t, reactors[0].Mempool, NUM_TXS, 1)
+	checkTxs(t, reactors[0].gossip, NUM_TXS, 1)
 	ensureNoTxs(t, reactors[1], 100*time.Millisecond)
 }
 
@@ -169,7 +169,7 @@ func TestBroadcastTxForPeerStopsWhenPeerStops(t *testing.T) {
 	sw.StopPeerForError(sw.Peers().List()[0], errors.New("some reason"))
 
 	// check that we are not leaking any go-routines
-	// i.e. broadcastTxRoutine finishes when peer is stopped
+	// i.e. broadcastMsgRoutine finishes when peer is stopped
 	leaktest.CheckTimeout(t, 10*time.Second)()
 }
 
@@ -188,7 +188,7 @@ func TestBroadcastTxForPeerStopsWhenReactorStops(t *testing.T) {
 	}
 
 	// check that we are not leaking any go-routines
-	// i.e. broadcastTxRoutine finishes when reactor is stopped
+	// i.e. broadcastMsgRoutine finishes when reactor is stopped
 	leaktest.CheckTimeout(t, 10*time.Second)()
 }
 

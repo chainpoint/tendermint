@@ -14,7 +14,7 @@ type Application interface {
 	SetOption(RequestSetOption) ResponseSetOption // Set application option
 	Query(RequestQuery) ResponseQuery             // Query for state
 
-	// Mempool Connection
+	// gossip Connection
 	CheckTx(tx []byte) ResponseCheckTx // Validate a tx for the mempool
 
 	// Consensus Connection

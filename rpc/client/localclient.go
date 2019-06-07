@@ -93,6 +93,18 @@ func (c *Local) BroadcastTxSync(tx types.Tx) (*ctypes.ResultBroadcastTx, error) 
 	return core.BroadcastTxSync(c.ctx, tx)
 }
 
+func (c *Local) BroadcastMsgCommit(tx types.Tx) (*ctypes.ResultBroadcastMsgCommit, error) {
+	return core.BroadcastMsgCommit(c.ctx, tx)
+}
+
+func (c *Local) BroadcastMsgAsync(tx types.Tx) (*ctypes.ResultBroadcastMsg, error) {
+	return core.BroadcastMsgAsync(c.ctx, tx)
+}
+
+func (c *Local) BroadcastMsgSync(tx types.Tx) (*ctypes.ResultBroadcastMsg, error) {
+	return core.BroadcastMsgSync(c.ctx, tx)
+}
+
 func (c *Local) UnconfirmedTxs(limit int) (*ctypes.ResultUnconfirmedTxs, error) {
 	return core.UnconfirmedTxs(c.ctx, limit)
 }

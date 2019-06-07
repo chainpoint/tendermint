@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	MempoolChannel = byte(0x30)
+	GossipChannel = byte(0x31)
 
 	maxMsgSize = 1048576        // 1MB TODO make it configurable
-	maxTxSize  = maxMsgSize - 8 // account for amino overhead of TxMessage
+	maxTxSize  = maxMsgSize - 8 // account for amino overhead of Message
 
 	peerCatchupSleepIntervalMS = 100 // If peer is behind, sleep this amount
 
@@ -31,17 +31,17 @@ const (
 	maxActiveIDs = math.MaxUint16
 )
 
-// MempoolReactor handles mempool tx broadcasting amongst peers.
+// GossipReactor handles mempool tx broadcasting amongst peers.
 // It maintains a map from peer ID to counter, to prevent gossiping txs to the
 // peers you received it from.
-type MempoolReactor struct {
+type GossipReactor struct {
 	p2p.BaseReactor
-	config  *cfg.MempoolConfig
-	Mempool *Gossip
-	ids     *mempoolIDs
+	config *cfg.MempoolConfig
+	gossip *Gossip
+	ids    *gossipIDs
 }
 
-type mempoolIDs struct {
+type gossipIDs struct {
 	mtx       sync.RWMutex
 	peerMap   map[p2p.ID]uint16
 	nextID    uint16              // assumes that a node will never have over 65536 active peers
@@ -50,7 +50,7 @@ type mempoolIDs struct {
 
 // Reserve searches for the next unused ID and assignes it to the
 // peer.
-func (ids *mempoolIDs) ReserveForPeer(peer p2p.Peer) {
+func (ids *gossipIDs) ReserveForPeer(peer p2p.Peer) {
 	ids.mtx.Lock()
 	defer ids.mtx.Unlock()
 
@@ -61,7 +61,7 @@ func (ids *mempoolIDs) ReserveForPeer(peer p2p.Peer) {
 
 // nextPeerID returns the next unused peer ID to use.
 // This assumes that ids's mutex is already locked.
-func (ids *mempoolIDs) nextPeerID() uint16 {
+func (ids *gossipIDs) nextPeerID() uint16 {
 	if len(ids.activeIDs) == maxActiveIDs {
 		panic(fmt.Sprintf("node has maximum %d active IDs and wanted to get one more", maxActiveIDs))
 	}
@@ -77,7 +77,7 @@ func (ids *mempoolIDs) nextPeerID() uint16 {
 }
 
 // Reclaim returns the ID reserved for the peer back to unused pool.
-func (ids *mempoolIDs) Reclaim(peer p2p.Peer) {
+func (ids *gossipIDs) Reclaim(peer p2p.Peer) {
 	ids.mtx.Lock()
 	defer ids.mtx.Unlock()
 
@@ -89,40 +89,40 @@ func (ids *mempoolIDs) Reclaim(peer p2p.Peer) {
 }
 
 // GetForPeer returns an ID reserved for the peer.
-func (ids *mempoolIDs) GetForPeer(peer p2p.Peer) uint16 {
+func (ids *gossipIDs) GetForPeer(peer p2p.Peer) uint16 {
 	ids.mtx.RLock()
 	defer ids.mtx.RUnlock()
 
 	return ids.peerMap[peer.ID()]
 }
 
-func newMempoolIDs() *mempoolIDs {
-	return &mempoolIDs{
+func newGossipIDs() *gossipIDs {
+	return &gossipIDs{
 		peerMap:   make(map[p2p.ID]uint16),
 		activeIDs: map[uint16]struct{}{0: {}},
 		nextID:    1, // reserve unknownPeerID(0) for mempoolReactor.BroadcastTx
 	}
 }
 
-// NewMempoolReactor returns a new MempoolReactor with the given config and mempool.
-func NewMempoolReactor(config *cfg.MempoolConfig, mempool *Gossip) *MempoolReactor {
-	memR := &MempoolReactor{
-		config:  config,
-		Mempool: mempool,
-		ids:     newMempoolIDs(),
+// NewMempoolReactor returns a new GossipReactor with the given config and mempool.
+func NewGossipReactor(config *cfg.MempoolConfig, gossip *Gossip) *GossipReactor {
+	memR := &GossipReactor{
+		config: config,
+		gossip: gossip,
+		ids:    newGossipIDs(),
 	}
-	memR.BaseReactor = *p2p.NewBaseReactor("MempoolReactor", memR)
+	memR.BaseReactor = *p2p.NewBaseReactor("GossipReactor", memR)
 	return memR
 }
 
 // SetLogger sets the Logger on the reactor and the underlying Gossip.
-func (memR *MempoolReactor) SetLogger(l log.Logger) {
+func (memR *GossipReactor) SetLogger(l log.Logger) {
 	memR.Logger = l
-	memR.Mempool.SetLogger(l)
+	memR.gossip.SetLogger(l)
 }
 
 // OnStart implements p2p.BaseReactor.
-func (memR *MempoolReactor) OnStart() error {
+func (memR *GossipReactor) OnStart() error {
 	if !memR.config.Broadcast {
 		memR.Logger.Info("Tx broadcasting is disabled")
 	}
@@ -131,10 +131,10 @@ func (memR *MempoolReactor) OnStart() error {
 
 // GetChannels implements Reactor.
 // It returns the list of channels for this reactor.
-func (memR *MempoolReactor) GetChannels() []*p2p.ChannelDescriptor {
+func (memR *GossipReactor) GetChannels() []*p2p.ChannelDescriptor {
 	return []*p2p.ChannelDescriptor{
 		{
-			ID:       MempoolChannel,
+			ID:       GossipChannel,
 			Priority: 5,
 		},
 	}
@@ -142,20 +142,20 @@ func (memR *MempoolReactor) GetChannels() []*p2p.ChannelDescriptor {
 
 // AddPeer implements Reactor.
 // It starts a broadcast routine ensuring all txs are forwarded to the given peer.
-func (memR *MempoolReactor) AddPeer(peer p2p.Peer) {
+func (memR *GossipReactor) AddPeer(peer p2p.Peer) {
 	memR.ids.ReserveForPeer(peer)
-	go memR.broadcastTxRoutine(peer)
+	go memR.broadcastMsgRoutine(peer)
 }
 
 // RemovePeer implements Reactor.
-func (memR *MempoolReactor) RemovePeer(peer p2p.Peer, reason interface{}) {
+func (memR *GossipReactor) RemovePeer(peer p2p.Peer, reason interface{}) {
 	memR.ids.Reclaim(peer)
 	// broadcast routine checks if peer is gone and returns
 }
 
 // Receive implements Reactor.
 // It adds any received transactions to the mempool.
-func (memR *MempoolReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
+func (memR *GossipReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 	msg, err := decodeMsg(msgBytes)
 	if err != nil {
 		memR.Logger.Error("Error decoding message", "src", src, "chId", chID, "msg", msg, "err", err, "bytes", msgBytes)
@@ -165,9 +165,9 @@ func (memR *MempoolReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 	memR.Logger.Debug("Receive", "src", src, "chId", chID, "msg", msg)
 
 	switch msg := msg.(type) {
-	case *TxMessage:
+	case *Message:
 		peerID := memR.ids.GetForPeer(src)
-		err := memR.Mempool.CheckTxWithInfo(msg.Tx, nil, TxInfo{PeerID: peerID})
+		err := memR.gossip.DeliverMsgWithInfo(msg.Tx, nil, TxInfo{PeerID: peerID})
 		if err != nil {
 			memR.Logger.Info("Could not check tx", "tx", TxID(msg.Tx), "err", err)
 		}
@@ -183,7 +183,7 @@ type PeerState interface {
 }
 
 // Send new mempool txs to peer.
-func (memR *MempoolReactor) broadcastTxRoutine(peer p2p.Peer) {
+func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 	if !memR.config.Broadcast {
 		return
 	}
@@ -200,8 +200,8 @@ func (memR *MempoolReactor) broadcastTxRoutine(peer p2p.Peer) {
 		// start from the beginning.
 		if next == nil {
 			select {
-			case <-memR.Mempool.TxsWaitChan(): // Wait until a tx is available
-				if next = memR.Mempool.TxsFront(); next == nil {
+			case <-memR.gossip.TxsWaitChan(): // Wait until a tx is available
+				if next = memR.gossip.TxsFront(); next == nil {
 					continue
 				}
 			case <-peer.Quit():
@@ -232,8 +232,8 @@ func (memR *MempoolReactor) broadcastTxRoutine(peer p2p.Peer) {
 		// ensure peer hasn't already sent us this tx
 		if _, ok := memTx.senders.Load(peerID); !ok {
 			// send memTx
-			msg := &TxMessage{Tx: memTx.tx}
-			success := peer.Send(MempoolChannel, cdc.MustMarshalBinaryBare(msg))
+			msg := &Message{Tx: memTx.msg}
+			success := peer.Send(GossipChannel, cdc.MustMarshalBinaryBare(msg))
 			if !success {
 				time.Sleep(peerCatchupSleepIntervalMS * time.Millisecond)
 				continue
@@ -255,15 +255,15 @@ func (memR *MempoolReactor) broadcastTxRoutine(peer p2p.Peer) {
 //-----------------------------------------------------------------------------
 // Messages
 
-// MempoolMessage is a message sent or received by the MempoolReactor.
-type MempoolMessage interface{}
+// GossipMessage is a message sent or received by the GossipReactor.
+type GossipMessage interface{}
 
-func RegisterMempoolMessages(cdc *amino.Codec) {
-	cdc.RegisterInterface((*MempoolMessage)(nil), nil)
-	cdc.RegisterConcrete(&TxMessage{}, "tendermint/mempool/TxMessage", nil)
+func RegisterGossipMessages(cdc *amino.Codec) {
+	cdc.RegisterInterface((*GossipMessage)(nil), nil)
+	cdc.RegisterConcrete(&Message{}, "tendermint/gossip/GossipMessage", nil)
 }
 
-func decodeMsg(bz []byte) (msg MempoolMessage, err error) {
+func decodeMsg(bz []byte) (msg GossipMessage, err error) {
 	if len(bz) > maxMsgSize {
 		return msg, fmt.Errorf("Msg exceeds max size (%d > %d)", len(bz), maxMsgSize)
 	}
@@ -273,12 +273,12 @@ func decodeMsg(bz []byte) (msg MempoolMessage, err error) {
 
 //-------------------------------------
 
-// TxMessage is a MempoolMessage containing a transaction.
-type TxMessage struct {
+// Message is a GossipMessage containing a transaction.
+type Message struct {
 	Tx types.Tx
 }
 
-// String returns a string representation of the TxMessage.
-func (m *TxMessage) String() string {
-	return fmt.Sprintf("[TxMessage %v]", m.Tx)
+// String returns a string representation of the Message.
+func (m *Message) String() string {
+	return fmt.Sprintf("[Message %v]", m.Tx)
 }

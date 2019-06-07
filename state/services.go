@@ -14,7 +14,7 @@ import (
 //------------------------------------------------------
 // mempool
 
-// Mempool defines the mempool interface as used by the ConsensusState.
+// gossip defines the mempool interface as used by the ConsensusState.
 // Updates to the mempool need to be synchronized with committing a block
 // so apps can reset their transient state on Commit
 type Mempool interface {
@@ -33,7 +33,7 @@ type Mempool interface {
 	EnableTxsAvailable()
 }
 
-// MockMempool is an empty implementation of a Mempool, useful for testing.
+// MockMempool is an empty implementation of a gossip, useful for testing.
 type MockMempool struct{}
 
 var _ Mempool = MockMempool{}
@@ -96,7 +96,7 @@ type EvidencePool interface {
 	IsCommitted(types.Evidence) bool
 }
 
-// MockMempool is an empty implementation of a Mempool, useful for testing.
+// MockMempool is an empty implementation of a gossip, useful for testing.
 type MockEvidencePool struct{}
 
 func (m MockEvidencePool) PendingEvidence(int64) []types.Evidence { return nil }

@@ -391,7 +391,7 @@ func TestMempoolCloseWAL(t *testing.T) {
 	require.Equal(t, 1, len(m3), "expecting the wal match in")
 }
 
-// Size of the amino encoded TxMessage is the length of the
+// Size of the amino encoded Message is the length of the
 // encoded byte array, plus 1 for the struct field, plus 4
 // for the amino prefix.
 func txMessageSize(tx types.Tx) int {
@@ -432,7 +432,7 @@ func TestMempoolMaxMsgSize(t *testing.T) {
 
 		tx := cmn.RandBytes(testCase.len)
 		err := mempl.CheckTx(tx, nil)
-		msg := &TxMessage{tx}
+		msg := &Message{tx}
 		encoded := cdc.MustMarshalBinaryBare(msg)
 		require.Equal(t, len(encoded), txMessageSize(tx), caseString)
 		if !testCase.err {

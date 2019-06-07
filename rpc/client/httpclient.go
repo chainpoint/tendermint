@@ -113,6 +113,23 @@ func (c *HTTP) broadcastTX(route string, tx types.Tx) (*ctypes.ResultBroadcastTx
 	return result, nil
 }
 
+func (c *HTTP) BroadcastMsgAsync(tx types.Tx) (*ctypes.ResultBroadcastMsg, error) {
+	return c.broadcastMsg("broadcast_msg_async", tx)
+}
+
+func (c *HTTP) BroadcastMsgSync(tx types.Tx) (*ctypes.ResultBroadcastMsg, error) {
+	return c.broadcastMsg("broadcast_msg_sync", tx)
+}
+
+func (c *HTTP) broadcastMsg(route string, tx types.Tx) (*ctypes.ResultBroadcastMsg, error) {
+	result := new(ctypes.ResultBroadcastMsg)
+	_, err := c.rpc.Call(route, map[string]interface{}{"msg": tx}, result)
+	if err != nil {
+		return nil, errors.Wrap(err, route)
+	}
+	return result, nil
+}
+
 func (c *HTTP) UnconfirmedTxs(limit int) (*ctypes.ResultUnconfirmedTxs, error) {
 	result := new(ctypes.ResultUnconfirmedTxs)
 	_, err := c.rpc.Call("unconfirmed_txs", map[string]interface{}{"limit": limit}, result)

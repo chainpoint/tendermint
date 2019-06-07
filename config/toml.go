@@ -260,20 +260,20 @@ dial_timeout = "{{ .P2P.DialTimeout }}"
 ##### mempool configuration options #####
 [mempool]
 
-recheck = {{ .Mempool.Recheck }}
-broadcast = {{ .Mempool.Broadcast }}
-wal_dir = "{{ js .Mempool.WalPath }}"
+recheck = {{ .gossip.Recheck }}
+broadcast = {{ .gossip.Broadcast }}
+wal_dir = "{{ js .gossip.WalPath }}"
 
 # Maximum number of transactions in the mempool
-size = {{ .Mempool.Size }}
+size = {{ .gossip.Size }}
 
 # Limit the total size of all txs in the mempool.
 # This only accounts for raw transactions (e.g. given 1MB transactions and
 # max_txs_bytes=5MB, mempool will only accept 5 transactions).
-max_txs_bytes = {{ .Mempool.MaxTxsBytes }}
+max_txs_bytes = {{ .gossip.MaxTxsBytes }}
 
 # Size of the cache (used to filter transactions we saw earlier) in transactions
-cache_size = {{ .Mempool.CacheSize }}
+cache_size = {{ .gossip.CacheSize }}
 
 ##### consensus configuration options #####
 [consensus]

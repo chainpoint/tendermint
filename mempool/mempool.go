@@ -86,7 +86,7 @@ type ErrMempoolIsFull struct {
 
 func (e ErrMempoolIsFull) Error() string {
 	return fmt.Sprintf(
-		"Mempool is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
+		"gossip is full: number of txs %d (max: %d), total txs bytes %d (max: %d)",
 		e.numTxs, e.maxTxs,
 		e.txsBytes, e.maxTxsBytes)
 }
@@ -154,9 +154,9 @@ func txKey(tx types.Tx) [sha256.Size]byte {
 	return sha256.Sum256(tx)
 }
 
-// Mempool is an ordered in-memory pool for transactions before they are proposed in a consensus
+// gossip is an ordered in-memory pool for transactions before they are proposed in a consensus
 // round. Transaction validity is checked using the CheckTx abci message before the transaction is
-// added to the pool. The Mempool uses a concurrent list structure for storing transactions that
+// added to the pool. The gossip uses a concurrent list structure for storing transactions that
 // can be efficiently accessed by multiple concurrent readers.
 type Mempool struct {
 	config *cfg.MempoolConfig
@@ -198,10 +198,10 @@ type Mempool struct {
 	metrics *Metrics
 }
 
-// MempoolOption sets an optional parameter on the Mempool.
+// MempoolOption sets an optional parameter on the gossip.
 type MempoolOption func(*Mempool)
 
-// NewMempool returns a new Mempool with the given configuration and connection to an application.
+// NewMempool returns a new gossip with the given configuration and connection to an application.
 func NewMempool(
 	config *cfg.MempoolConfig,
 	proxyAppConn proxy.AppConnMempool,
@@ -268,11 +268,11 @@ func (mem *Mempool) InitWAL() {
 	walDir := mem.config.WalDir()
 	err := cmn.EnsureDir(walDir, 0700)
 	if err != nil {
-		panic(errors.Wrap(err, "Error ensuring Mempool WAL dir"))
+		panic(errors.Wrap(err, "Error ensuring gossip WAL dir"))
 	}
 	af, err := auto.OpenAutoFile(walDir + "/wal")
 	if err != nil {
-		panic(errors.Wrap(err, "Error opening Mempool WAL file"))
+		panic(errors.Wrap(err, "Error opening gossip WAL file"))
 	}
 	mem.wal = af
 }

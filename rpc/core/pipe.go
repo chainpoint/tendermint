@@ -9,6 +9,7 @@ import (
 	dbm "github.com/chainpoint/tendermint/libs/db"
 	"github.com/chainpoint/tendermint/libs/log"
 	mempl "github.com/chainpoint/tendermint/mempool"
+	gos "github.com/chainpoint/tendermint/gossip"
 	"github.com/chainpoint/tendermint/p2p"
 	"github.com/chainpoint/tendermint/proxy"
 	sm "github.com/chainpoint/tendermint/state"
@@ -73,6 +74,7 @@ var (
 	consensusReactor *consensus.ConsensusReactor
 	eventBus         *types.EventBus // thread safe
 	mempool          *mempl.Mempool
+	gossip			 *gos.Gossip
 
 	logger log.Logger
 

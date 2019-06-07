@@ -143,6 +143,22 @@ type ResultConsensusState struct {
 	RoundState json.RawMessage `json:"round_state"`
 }
 
+// CheckMsg result
+type ResultBroadcastMsg struct {
+	Code uint32       `json:"code"`
+	Data cmn.HexBytes `json:"data"`
+	Log  string       `json:"log"`
+
+	Hash cmn.HexBytes `json:"hash"`
+}
+
+// DeliverMsg results
+type ResultBroadcastMsgCommit struct {
+	DeliverMsg abci.ResponseDeliverMsg `json:"deliver_msg"`
+	Hash      cmn.HexBytes           `json:"hash"`
+	Height    int64                  `json:"height"`
+}
+
 // CheckTx result
 type ResultBroadcastTx struct {
 	Code uint32       `json:"code"`
