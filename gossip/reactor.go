@@ -226,7 +226,6 @@ func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 		}
 
 		memTx := next.Value.(*gossipTx)
-		fmt.Println(fmt.Sprintf("gossip tx: %#v", memTx))
 
 		// make sure the peer is up to date
 		peerState, ok := peer.Get(types.PeerStateKey).(PeerState)
