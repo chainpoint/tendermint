@@ -249,9 +249,7 @@ func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 		if _, ok := memTx.senders.Load(peerID); !ok {
 			// send memTx
 			msg := &Message{Tx: memTx.msg}
-			fmt.Println(fmt.Sprintf("gossip msg send attempt: %#v", msg))
 			success := peer.Send(GossipChannel, cdc.MustMarshalBinaryBare(msg))
-			fmt.Println(fmt.Sprintf("gossip success: %t", success))
 			if !success {
 				time.Sleep(peerCatchupSleepIntervalMS * time.Millisecond)
 				continue
