@@ -36,6 +36,7 @@ const (
 // peers you received it from.
 type GossipReactor struct {
 	p2p.BaseReactor
+	eventBus *types.EventBus
 	config *cfg.MempoolConfig
 	Gossip *Gossip
 	ids    *gossipIDs
@@ -136,6 +137,9 @@ func (memR *GossipReactor) GetChannels() []*p2p.ChannelDescriptor {
 		{
 			ID:       GossipChannel,
 			Priority: 5,
+			SendQueueCapacity:   100,
+			RecvBufferCapacity:  50 * 4096,
+			RecvMessageCapacity: maxMsgSize,
 		},
 	}
 }
@@ -145,6 +149,11 @@ func (memR *GossipReactor) GetChannels() []*p2p.ChannelDescriptor {
 func (memR *GossipReactor) AddPeer(peer p2p.Peer) {
 	memR.ids.ReserveForPeer(peer)
 	go memR.broadcastMsgRoutine(peer)
+}
+
+// SetEventBus sets the bus.
+func (memR *GossipReactor) SetEventBus(b *types.EventBus) {
+	memR.eventBus = b
 }
 
 // RemovePeer implements Reactor.
@@ -158,6 +167,7 @@ func (memR *GossipReactor) RemovePeer(peer p2p.Peer, reason interface{}) {
 func (memR *GossipReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 	msg, err := decodeMsg(msgBytes)
 	if err != nil {
+		fmt.Println(fmt.Sprintf("gossip nsg not decoded: %#v", err))
 		memR.Logger.Error("Error decoding message", "src", src, "chId", chID, "msg", msg, "err", err, "bytes", msgBytes)
 		memR.Switch.StopPeerForError(src, err)
 		return
@@ -166,13 +176,16 @@ func (memR *GossipReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 
 	switch msg := msg.(type) {
 	case *Message:
+		fmt.Println(fmt.Sprintf("gossip msg received"))
 		peerID := memR.ids.GetForPeer(src)
 		err := memR.Gossip.DeliverMsgWithInfo(msg.Tx, nil, TxInfo{PeerID: peerID})
 		if err != nil {
+			fmt.Println(fmt.Sprintf("gossip msg delivery error"))
 			memR.Logger.Info("Could not check tx", "tx", TxID(msg.Tx), "err", err)
 		}
 		// broadcasting happens from go routines per peer
 	default:
+		fmt.Println(fmt.Sprintf("gossip msg unknown"))
 		memR.Logger.Error(fmt.Sprintf("Unknown message type %v", reflect.TypeOf(msg)))
 	}
 }
@@ -184,6 +197,7 @@ type PeerState interface {
 
 // Send new mempool txs to peer.
 func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
+	fmt.Println("gossip: starting broadcast routine")
 	if !memR.config.Broadcast {
 		return
 	}
@@ -212,10 +226,12 @@ func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 		}
 
 		memTx := next.Value.(*gossipTx)
+		fmt.Println(fmt.Sprintf("gossip tx: %#v", memTx))
 
 		// make sure the peer is up to date
 		peerState, ok := peer.Get(types.PeerStateKey).(PeerState)
 		if !ok {
+			fmt.Println(fmt.Sprintf("gossip peer not ok: %#v", peerState))
 			// Peer does not have a state yet. We set it in the consensus reactor, but
 			// when we add peer in Switch, the order we call reactors#AddPeer is
 			// different every time due to us using a map. Sometimes other reactors
@@ -233,9 +249,10 @@ func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 		if _, ok := memTx.senders.Load(peerID); !ok {
 			// send memTx
 			msg := &Message{Tx: memTx.msg}
+			fmt.Println(fmt.Sprintf("gossip msg send attempt: %#v", msg))
 			success := peer.Send(GossipChannel, cdc.MustMarshalBinaryBare(msg))
+			fmt.Println(fmt.Sprintf("gossip success: %t", success))
 			if !success {
-
 				time.Sleep(peerCatchupSleepIntervalMS * time.Millisecond)
 				continue
 			}
@@ -269,6 +286,9 @@ func decodeMsg(bz []byte) (msg GossipMessage, err error) {
 		return msg, fmt.Errorf("Msg exceeds max size (%d > %d)", len(bz), maxMsgSize)
 	}
 	err = cdc.UnmarshalBinaryBare(bz, &msg)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("gossip decoding error: %#v", err))
+	}
 	return
 }
 
