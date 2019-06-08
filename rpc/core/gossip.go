@@ -26,7 +26,7 @@ func BroadcastMsgSync(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadca
 		return nil, err
 	}
 	res := <-resCh
-	r := res.GetCheckTx()
+	r := res.GetDeliverMsg()
 	return &ctypes.ResultBroadcastMsg{
 		Code: r.Code,
 		Data: r.Data,
