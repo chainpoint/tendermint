@@ -356,8 +356,8 @@ func (gos *Gossip) resCbFirstTime(msg []byte, peerID uint16, res *abci.Response)
 // resCbFirstTime callback.
 func (gos *Gossip) resCbRecheck(req *abci.Request, res *abci.Response) {
 	switch r := res.Value.(type) {
-	case *abci.Response_CheckTx:
-		msg := req.GetCheckTx().Tx
+	case *abci.Response_DeliverMsg:
+		msg := req.GetDeliverMsg().Msg
 		memTx := gos.recheckCursor.Value.(*gossipTx)
 		if !bytes.Equal(msg, memTx.msg) {
 			panic(fmt.Sprintf(
@@ -365,7 +365,7 @@ func (gos *Gossip) resCbRecheck(req *abci.Request, res *abci.Response) {
 				memTx.msg,
 				msg))
 		}
-		if (r.CheckTx.Code == abci.CodeTypeOK) {
+		if (r.DeliverMsg.Code == abci.CodeTypeOK) {
 			// Good, nothing to do.
 		} else {
 			// Tx became invalidated due to newly committed block.

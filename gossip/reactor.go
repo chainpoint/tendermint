@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	GossipChannel = byte(0x31)
+	GossipChannel = byte(0x50)
 
 	maxMsgSize = 1048576        // 1MB TODO make it configurable
 	maxTxSize  = maxMsgSize - 8 // account for amino overhead of Message
@@ -235,6 +235,7 @@ func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 			msg := &Message{Tx: memTx.msg}
 			success := peer.Send(GossipChannel, cdc.MustMarshalBinaryBare(msg))
 			if !success {
+
 				time.Sleep(peerCatchupSleepIntervalMS * time.Millisecond)
 				continue
 			}
@@ -260,7 +261,7 @@ type GossipMessage interface{}
 
 func RegisterGossipMessages(cdc *amino.Codec) {
 	cdc.RegisterInterface((*GossipMessage)(nil), nil)
-	cdc.RegisterConcrete(&Message{}, "tendermint/Gossip/GossipMessage", nil)
+	cdc.RegisterConcrete(&Message{}, "tendermint/Gossip/Message", nil)
 }
 
 func decodeMsg(bz []byte) (msg GossipMessage, err error) {
