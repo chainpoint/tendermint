@@ -90,7 +90,7 @@ func waitForTxs(t *testing.T, txs types.Txs, reactors []*GossipReactor) {
 // wait for all txs on a single mempool
 func _waitForTxs(t *testing.T, wg *sync.WaitGroup, txs types.Txs, reactorIdx int, reactors []*GossipReactor) {
 
-	mempool := reactors[reactorIdx].gossip
+	mempool := reactors[reactorIdx].Gossip
 	for mempool.Size() != len(txs) {
 		time.Sleep(time.Millisecond * 100)
 	}
@@ -105,7 +105,7 @@ func _waitForTxs(t *testing.T, wg *sync.WaitGroup, txs types.Txs, reactorIdx int
 // ensure no txs on reactor after some timeout
 func ensureNoTxs(t *testing.T, reactor *GossipReactor, timeout time.Duration) {
 	time.Sleep(timeout) // wait for the txs in all mempools
-	assert.Zero(t, reactor.gossip.Size())
+	assert.Zero(t, reactor.Gossip.Size())
 }
 
 const (
@@ -130,7 +130,7 @@ func TestReactorBroadcastTxMessage(t *testing.T) {
 
 	// send a bunch of txs to the first reactor's mempool
 	// and wait for them all to be received in the others
-	txs := checkTxs(t, reactors[0].gossip, NUM_TXS, UnknownPeerID)
+	txs := checkTxs(t, reactors[0].Gossip, NUM_TXS, UnknownPeerID)
 	waitForTxs(t, txs, reactors)
 }
 
@@ -146,7 +146,7 @@ func TestReactorNoBroadcastToSender(t *testing.T) {
 
 	// send a bunch of txs to the first reactor's mempool, claiming it came from peer
 	// ensure peer gets no txs
-	checkTxs(t, reactors[0].gossip, NUM_TXS, 1)
+	checkTxs(t, reactors[0].Gossip, NUM_TXS, 1)
 	ensureNoTxs(t, reactors[1], 100*time.Millisecond)
 }
 

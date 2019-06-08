@@ -37,7 +37,7 @@ const (
 type GossipReactor struct {
 	p2p.BaseReactor
 	config *cfg.MempoolConfig
-	gossip *Gossip
+	Gossip *Gossip
 	ids    *gossipIDs
 }
 
@@ -108,7 +108,7 @@ func newGossipIDs() *gossipIDs {
 func NewGossipReactor(config *cfg.MempoolConfig, gossip *Gossip) *GossipReactor {
 	memR := &GossipReactor{
 		config: config,
-		gossip: gossip,
+		Gossip: gossip,
 		ids:    newGossipIDs(),
 	}
 	memR.BaseReactor = *p2p.NewBaseReactor("GossipReactor", memR)
@@ -118,7 +118,7 @@ func NewGossipReactor(config *cfg.MempoolConfig, gossip *Gossip) *GossipReactor 
 // SetLogger sets the Logger on the reactor and the underlying Gossip.
 func (memR *GossipReactor) SetLogger(l log.Logger) {
 	memR.Logger = l
-	memR.gossip.SetLogger(l)
+	memR.Gossip.SetLogger(l)
 }
 
 // OnStart implements p2p.BaseReactor.
@@ -167,7 +167,7 @@ func (memR *GossipReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 	switch msg := msg.(type) {
 	case *Message:
 		peerID := memR.ids.GetForPeer(src)
-		err := memR.gossip.DeliverMsgWithInfo(msg.Tx, nil, TxInfo{PeerID: peerID})
+		err := memR.Gossip.DeliverMsgWithInfo(msg.Tx, nil, TxInfo{PeerID: peerID})
 		if err != nil {
 			memR.Logger.Info("Could not check tx", "tx", TxID(msg.Tx), "err", err)
 		}
@@ -200,8 +200,8 @@ func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 		// start from the beginning.
 		if next == nil {
 			select {
-			case <-memR.gossip.TxsWaitChan(): // Wait until a tx is available
-				if next = memR.gossip.TxsFront(); next == nil {
+			case <-memR.Gossip.TxsWaitChan(): // Wait until a tx is available
+				if next = memR.Gossip.TxsFront(); next == nil {
 					continue
 				}
 			case <-peer.Quit():
@@ -260,7 +260,7 @@ type GossipMessage interface{}
 
 func RegisterGossipMessages(cdc *amino.Codec) {
 	cdc.RegisterInterface((*GossipMessage)(nil), nil)
-	cdc.RegisterConcrete(&Message{}, "tendermint/gossip/GossipMessage", nil)
+	cdc.RegisterConcrete(&Message{}, "tendermint/Gossip/GossipMessage", nil)
 }
 
 func decodeMsg(bz []byte) (msg GossipMessage, err error) {

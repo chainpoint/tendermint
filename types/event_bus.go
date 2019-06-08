@@ -169,6 +169,16 @@ func (b *EventBus) PublishEventTx(data EventDataTx) error {
 	return nil
 }
 
+func (b *EventBus) PublishEventMsg(data EventDataMsg) error {
+	// no explicit deadline for publishing events
+	ctx := context.Background()
+
+	tags := make(map[string]string)
+
+	b.pubsub.PublishWithTags(ctx, data, tags)
+	return nil
+}
+
 func (b *EventBus) PublishEventNewRoundStep(data EventDataRoundState) error {
 	return b.Publish(EventNewRoundStep, data)
 }
@@ -243,6 +253,10 @@ func (NopEventBus) PublishEventVote(data EventDataVote) error {
 }
 
 func (NopEventBus) PublishEventTx(data EventDataTx) error {
+	return nil
+}
+
+func (NopEventBus) PublishEventMsg(data EventDataMsg) error {
 	return nil
 }
 

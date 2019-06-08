@@ -93,6 +93,10 @@ func SetMempool(mem *mempl.Mempool) {
 	mempool = mem
 }
 
+func SetGossip(g *gos.Gossip) {
+	gossip = g
+}
+
 func SetEvidencePool(evpool sm.EvidencePool) {
 	evidencePool = evpool
 }

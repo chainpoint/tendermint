@@ -161,6 +161,7 @@ type Node struct {
 	blockStore       *bc.BlockStore         // store the blockchain to disk
 	bcReactor        *bc.BlockchainReactor  // for fast-syncing
 	mempoolReactor   *mempl.MempoolReactor  // for gossipping transactions
+	gossipReactor    *gos.GossipReactor     // for gossipping messages
 	consensusState   *cs.ConsensusState     // latest consensus state
 	consensusReactor *cs.ConsensusReactor   // for participating in the consensus
 	evidencePool     *evidence.EvidencePool // tracking evidence
@@ -551,6 +552,7 @@ func NewNode(config *cfg.Config,
 		blockStore:       blockStore,
 		bcReactor:        bcReactor,
 		mempoolReactor:   mempoolReactor,
+		gossipReactor:    gossipReactor,
 		consensusState:   consensusState,
 		consensusReactor: consensusReactor,
 		evidencePool:     evidencePool,
@@ -670,6 +672,7 @@ func (n *Node) ConfigureRPC() {
 	rpccore.SetBlockStore(n.blockStore)
 	rpccore.SetConsensusState(n.consensusState)
 	rpccore.SetMempool(n.mempoolReactor.Mempool)
+	rpccore.SetGossip(n.gossipReactor.Gossip)
 	rpccore.SetEvidencePool(n.evidencePool)
 	rpccore.SetP2PPeers(n.sw)
 	rpccore.SetP2PTransport(n)
