@@ -167,7 +167,6 @@ func (memR *GossipReactor) RemovePeer(peer p2p.Peer, reason interface{}) {
 func (memR *GossipReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 	msg, err := decodeMsg(msgBytes)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("gossip nsg not decoded: %#v", err))
 		memR.Logger.Error("Error decoding message", "src", src, "chId", chID, "msg", msg, "err", err, "bytes", msgBytes)
 		memR.Switch.StopPeerForError(src, err)
 		return
@@ -176,16 +175,13 @@ func (memR *GossipReactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 
 	switch msg := msg.(type) {
 	case *Message:
-		fmt.Println(fmt.Sprintf("gossip msg received"))
 		peerID := memR.ids.GetForPeer(src)
 		err := memR.Gossip.DeliverMsgWithInfo(msg.Tx, nil, TxInfo{PeerID: peerID})
 		if err != nil {
-			fmt.Println(fmt.Sprintf("gossip msg delivery error"))
 			memR.Logger.Info("Could not check tx", "tx", TxID(msg.Tx), "err", err)
 		}
 		// broadcasting happens from go routines per peer
 	default:
-		fmt.Println(fmt.Sprintf("gossip msg unknown"))
 		memR.Logger.Error(fmt.Sprintf("Unknown message type %v", reflect.TypeOf(msg)))
 	}
 }
@@ -197,7 +193,6 @@ type PeerState interface {
 
 // Send new mempool txs to peer.
 func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
-	fmt.Println("gossip: starting broadcast routine")
 	if !memR.config.Broadcast {
 		return
 	}
@@ -230,7 +225,6 @@ func (memR *GossipReactor) broadcastMsgRoutine(peer p2p.Peer) {
 		// make sure the peer is up to date
 		peerState, ok := peer.Get(types.PeerStateKey).(PeerState)
 		if !ok {
-			fmt.Println(fmt.Sprintf("gossip peer not ok: %#v", peerState))
 			// Peer does not have a state yet. We set it in the consensus reactor, but
 			// when we add peer in Switch, the order we call reactors#AddPeer is
 			// different every time due to us using a map. Sometimes other reactors
