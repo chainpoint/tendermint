@@ -19,7 +19,7 @@ import (
 const (
 	GossipChannel = byte(0x50)
 
-	maxMsgSize = 1048576        // 1MB TODO make it configurable
+	maxMsgSize = 20048576        // 20MB
 	maxTxSize  = maxMsgSize - 8 // account for amino overhead of Message
 
 	peerCatchupSleepIntervalMS = 100 // If peer is behind, sleep this amount
