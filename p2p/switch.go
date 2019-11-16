@@ -49,6 +49,7 @@ type AddrBook interface {
 	AddOurAddress(*NetAddress)
 	OurAddress(*NetAddress) bool
 	MarkGood(ID)
+	MarkBad(*NetAddress)
 	RemoveAddress(*NetAddress)
 	HasAddress(*NetAddress) bool
 	Save()
@@ -386,6 +387,13 @@ func (sw *Switch) SetAddrBook(addrBook AddrBook) {
 func (sw *Switch) MarkPeerAsGood(peer Peer) {
 	if sw.addrBook != nil {
 		sw.addrBook.MarkGood(peer.ID())
+	}
+}
+
+// MarkPeerAsBad marks the given peer as bad when it consistently fails
+func (sw *Switch) MarkPeerAsBad(peer Peer) {
+	if sw.addrBook != nil {
+		sw.addrBook.MarkBad(peer.SocketAddr())
 	}
 }
 

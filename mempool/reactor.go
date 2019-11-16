@@ -112,6 +112,8 @@ func NewMempoolReactor(config *cfg.MempoolConfig, mempool *Mempool) *MempoolReac
 		ids:     newMempoolIDs(),
 	}
 	memR.BaseReactor = *p2p.NewBaseReactor("MempoolReactor", memR)
+	memR.Mempool.baseReactor = &memR.BaseReactor
+	memR.Mempool.ids = memR.ids
 	return memR
 }
 

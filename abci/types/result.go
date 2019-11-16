@@ -9,6 +9,7 @@ import (
 
 const (
 	CodeTypeOK uint32 = 0
+	CodeTypeBadPeer uint32 = 66
 )
 
 // IsOK returns true if Code is OK.

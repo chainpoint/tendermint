@@ -5,6 +5,7 @@ import (
 	"container/list"
 	"crypto/sha256"
 	"fmt"
+	"github.com/chainpoint/tendermint/p2p"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -160,7 +161,8 @@ func txKey(tx types.Tx) [sha256.Size]byte {
 // can be efficiently accessed by multiple concurrent readers.
 type Mempool struct {
 	config *cfg.MempoolConfig
-
+	baseReactor *p2p.BaseReactor
+	ids     *mempoolIDs
 	proxyMtx     sync.Mutex
 	proxyAppConn proxy.AppConnMempool
 	txs          *clist.CList // concurrent linked-list of good txs
@@ -532,6 +534,15 @@ func (mem *Mempool) resCbFirstTime(tx []byte, peerID uint16, res *abci.Response)
 			mem.metrics.FailedTxs.Add(1)
 			// remove from cache (it might be good later)
 			mem.cache.Remove(tx)
+			if res.GetCheckTx().Code == abci.CodeTypeBadPeer{
+				for k, v := range mem.ids.peerMap{
+					if v == peerID && mem.baseReactor.Switch.Peers().Has(k){
+						mem.baseReactor.Switch.MarkPeerAsBad(mem.baseReactor.Switch.Peers().Get(k))
+						mem.logger.Info("Remove peer owing to bad transaction", "peer", k, "tx", TxID(tx), "res", r, "err", postCheckErr)
+						break;
+					}
+				}
+			}
 		}
 	default:
 		// ignore other messages
