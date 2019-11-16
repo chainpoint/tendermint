@@ -535,6 +535,9 @@ func (mem *Mempool) resCbFirstTime(tx []byte, peerID uint16, res *abci.Response)
 			// remove from cache (it might be good later)
 			mem.cache.Remove(tx)
 			if res.GetCheckTx().Code == abci.CodeTypeBadPeer{
+				if len(mem.ids.peerMap) == 0 {
+					mem.logger.Info("Peer Map is empty, cannot ban peer")
+				}
 				for k, v := range mem.ids.peerMap{
 					if v == peerID && mem.baseReactor.Switch.Peers().Has(k){
 						mem.baseReactor.Switch.MarkPeerAsBad(mem.baseReactor.Switch.Peers().Get(k))
