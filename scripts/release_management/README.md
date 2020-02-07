@@ -49,7 +49,7 @@ The below scripts help with these steps.
 ## github-draft.py
 Creates a GitHub release and fills the content with the CHANGELOG.md link. The version number can be changed by the `--version` parameter.
 
-By default, the command will use the tendermint/tendermint organization/repo, which can be changed using the `--org` and `--repo` parameters.
+By default, the command will use the chainpoint/tendermint organization/repo, which can be changed using the `--org` and `--repo` parameters.
 
 By default, the command will get the version number from the `${CIRCLE_TAG}` variable.
 

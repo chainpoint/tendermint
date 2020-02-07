@@ -105,7 +105,7 @@ as a wrapper, which verifies all the headers, using a light client connected to
 some other node.
 
 See
-https://github.com/tendermint/tendermint/blob/master/cmd/tendermint/commands/lite.go
+https://github.com/chainpoint/tendermint/blob/master/cmd/tendermint/commands/lite.go
 for usage example.
 */
 package lite

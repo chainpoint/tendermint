@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Create a draft release on GitHub. By default in the tendermint/tendermint repo.
+# Create a draft release on GitHub. By default in the chainpoint/tendermint repo.
 # Optimized for CircleCI
 
 import argparse
@@ -16,7 +16,7 @@ def request(org, repo, data):
     'Accept': 'application/vnd.github.v3+json',
     'Authorization': 'Basic %s' % user_and_pass
   }
-  
+
   conn = httplib.HTTPSConnection('api.github.com', timeout=5)
   conn.request('POST', '/repos/{0}/{1}/releases'.format(org,repo), data, headers)
   response = conn.getresponse()

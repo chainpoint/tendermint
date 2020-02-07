@@ -7,12 +7,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/tendermint/tendermint/libs/log"
-	tmmath "github.com/tendermint/tendermint/libs/math"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/lite2/provider"
-	"github.com/tendermint/tendermint/lite2/store"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/libs/log"
+	tmmath "github.com/chainpoint/tendermint/libs/math"
+	tmrand "github.com/chainpoint/tendermint/libs/rand"
+	"github.com/chainpoint/tendermint/lite2/provider"
+	"github.com/chainpoint/tendermint/lite2/store"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // TrustOptions are the trust parameters needed when a new light client

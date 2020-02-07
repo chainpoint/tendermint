@@ -8,11 +8,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/rpc/client"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"github.com/tendermint/tendermint/types"
+	abci "github.com/chainpoint/tendermint/abci/types"
+	tmrand "github.com/chainpoint/tendermint/libs/rand"
+	"github.com/chainpoint/tendermint/rpc/client"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	"github.com/chainpoint/tendermint/types"
 )
 
 var waitForEventTimeout = 5 * time.Second

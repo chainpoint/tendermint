@@ -17,13 +17,13 @@ want to directly call a tendermint node in process, you can use the
 import (
 	"reflect"
 
-	"github.com/tendermint/tendermint/libs/bytes"
-	"github.com/tendermint/tendermint/libs/service"
-	"github.com/tendermint/tendermint/rpc/client"
-	"github.com/tendermint/tendermint/rpc/core"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/libs/bytes"
+	"github.com/chainpoint/tendermint/libs/service"
+	"github.com/chainpoint/tendermint/rpc/client"
+	"github.com/chainpoint/tendermint/rpc/core"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	rpctypes "github.com/chainpoint/tendermint/rpc/lib/types"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // Client wraps arbitrary implementations of the various interfaces.

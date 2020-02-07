@@ -10,14 +10,14 @@ main Tendermint project, the following process leads to the best chance of
 landing changes in master.
 
 All work on the code base should be motivated by a [Github
-Issue](https://github.com/tendermint/tendermint/issues).
-[Search](https://github.com/tendermint/tendermint/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+Issue](https://github.com/chainpoint/tendermint/issues).
+[Search](https://github.com/chainpoint/tendermint/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 is a good place start when looking for places to contribute.  If you
 would like to work on an issue which already exists, please indicate so
 by leaving a comment.
 
 All new contributions should start with a [Github
-Issue](https://github.com/tendermint/tendermint/issues/new/choose). The
+Issue](https://github.com/chainpoint/tendermint/issues/new/choose). The
 issue helps capture the problem you're trying to solve and allows for
 early feedback. Once the issue is created the process can proceed in different
 directions depending on how well defined the problem and potential
@@ -37,7 +37,7 @@ the form of an [Architectural Decision Record
 overall strategy to ensure the code base maintains coherence
 in the larger context. If you are not comfortable with writing an ADR,
 you can open a less-formal issue and the maintainers will help you
-turn it into an ADR. ADR numbers can be registered [here](https://github.com/tendermint/tendermint/issues/2313).
+turn it into an ADR. ADR numbers can be registered [here](https://github.com/chainpoint/tendermint/issues/2313).
 
 When the problem as well as proposed solution are well understood,
 changes should start with a [draft
@@ -58,12 +58,12 @@ Please note that Go requires code to live under absolute paths, which complicate
 While my fork lives at `https://github.com/ebuchman/tendermint`,
 the code should never exist at `$GOPATH/src/github.com/ebuchman/tendermint`.
 Instead, we use `git remote` to add the fork as a new remote for the original repo,
-`$GOPATH/src/github.com/tendermint/tendermint`, and do all the work there.
+`$GOPATH/src/github.com/chainpoint/tendermint`, and do all the work there.
 
 For instance, to create a fork and work on a branch of it, I would:
 
 - Create the fork on github, using the fork button.
-- Go to the original repo checked out locally (i.e. `$GOPATH/src/github.com/tendermint/tendermint`)
+- Go to the original repo checked out locally (i.e. `$GOPATH/src/github.com/chainpoint/tendermint`)
 - `git remote rename origin upstream`
 - `git remote add origin git@github.com:ebuchman/basecoin.git`
 
@@ -160,7 +160,7 @@ easy to reference the pull request where a change was introduced.
 - the latest state of development is on `master`
 - `master` must never fail `make test`
 - never --force onto `master` (except when reverting a broken commit, which should seldom happen)
-- create a development branch either on github.com/tendermint/tendermint, or your fork (using `git remote add origin`)
+- create a development branch either on github.com/chainpoint/tendermint, or your fork (using `git remote add origin`)
 - make changes and update the `CHANGELOG_PENDING.md` to record your change
 - before submitting a pull request, run `git rebase` on top of the latest `master`
 

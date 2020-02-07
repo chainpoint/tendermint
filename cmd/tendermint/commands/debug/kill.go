@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	cfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/cli"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
+	cfg "github.com/chainpoint/tendermint/config"
+	"github.com/chainpoint/tendermint/libs/cli"
+	rpcclient "github.com/chainpoint/tendermint/rpc/client"
 )
 
 var killCmd = &cobra.Command{

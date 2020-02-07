@@ -13,19 +13,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/chainpoint/tendermint/abci/types"
 
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/crypto/tmhash"
-	"github.com/tendermint/tendermint/libs/log"
-	tmmath "github.com/tendermint/tendermint/libs/math"
-	mempl "github.com/tendermint/tendermint/mempool"
-	"github.com/tendermint/tendermint/privval"
-	"github.com/tendermint/tendermint/rpc/client"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
-	rpctest "github.com/tendermint/tendermint/rpc/test"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/crypto/ed25519"
+	"github.com/chainpoint/tendermint/crypto/tmhash"
+	"github.com/chainpoint/tendermint/libs/log"
+	tmmath "github.com/chainpoint/tendermint/libs/math"
+	mempl "github.com/chainpoint/tendermint/mempool"
+	"github.com/chainpoint/tendermint/privval"
+	"github.com/chainpoint/tendermint/rpc/client"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	rpcclient "github.com/chainpoint/tendermint/rpc/lib/client"
+	rpctest "github.com/chainpoint/tendermint/rpc/test"
+	"github.com/chainpoint/tendermint/types"
 )
 
 func getHTTPClient() *client.HTTP {

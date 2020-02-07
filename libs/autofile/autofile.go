@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	tmrand "github.com/tendermint/tendermint/libs/rand"
+	tmrand "github.com/chainpoint/tendermint/libs/rand"
 )
 
 /* AutoFile usage

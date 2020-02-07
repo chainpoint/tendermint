@@ -14,11 +14,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tendermint/tendermint/crypto"
-	tmmath "github.com/tendermint/tendermint/libs/math"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/libs/service"
-	"github.com/tendermint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/crypto"
+	tmmath "github.com/chainpoint/tendermint/libs/math"
+	tmrand "github.com/chainpoint/tendermint/libs/rand"
+	"github.com/chainpoint/tendermint/libs/service"
+	"github.com/chainpoint/tendermint/p2p"
 )
 
 const (

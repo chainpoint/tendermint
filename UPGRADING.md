@@ -11,7 +11,7 @@ This release is not compatible with previous blockchains due to commit becoming 
 
 You will need to generate a new config if you have used a prior version of tendermint.
 
-- Tags have been entirely renamed throughout the codebase to events and there keys are called [compositeKeys](https://github.com/tendermint/tendermint/blob/6d05c531f7efef6f0619155cf10ae8557dd7832f/docs/app-dev/indexing-transactions.md).
+- Tags have been entirely renamed throughout the codebase to events and there keys are called [compositeKeys](https://github.com/chainpoint/tendermint/blob/6d05c531f7efef6f0619155cf10ae8557dd7832f/docs/app-dev/indexing-transactions.md).
 - Evidence Params has been changed to include duration.
   - `consensus_params.evidence.max_age_duration`.
   - Renamed `consensus_params.evidence.max_age` to `max_age_num_blocks`.
@@ -133,7 +133,7 @@ query.MustParse("tm.event = 'Tx' AND transfer.recipient = 'bar'")
 query.MustParse("tm.event = 'Tx' AND transfer.sender = 'foo' AND transfer.recipient = 'bar'")
 ```
 
-For further documentation on `Events`, see the [docs](https://github.com/tendermint/tendermint/blob/60827f75623b92eff132dc0eff5b49d2025c591e/docs/spec/abci/abci.md#events).
+For further documentation on `Events`, see the [docs](https://github.com/chainpoint/tendermint/blob/60827f75623b92eff132dc0eff5b49d2025c591e/docs/spec/abci/abci.md#events).
 
 ### Go Applications
 
@@ -231,11 +231,11 @@ There was also a small change to field ordering in the vote struct. Any
 implementations of an out-of-process validator (like a Key-Management Server)
 will need to be updated. For specific details:
 
-- [Vote](https://github.com/tendermint/tendermint/blob/master/docs/spec/consensus/signing.md#votes)
+- [Vote](https://github.com/chainpoint/tendermint/blob/master/docs/spec/consensus/signing.md#votes)
 
 Finally, the proposer selection algorithm continues to evolve. See the
 [work-in-progress
-specification](https://github.com/tendermint/tendermint/pull/3140).
+specification](https://github.com/chainpoint/tendermint/pull/3140).
 
 For everything else, please see the [CHANGELOG](./CHANGELOG.md#v0.29.0).
 
@@ -284,9 +284,9 @@ for consistency with other messages.
 
 Note that the TCP sockets don't yet use a persistent key,
 so while they're encrypted, they can't yet be properly authenticated.
-See [#3105](https://github.com/tendermint/tendermint/issues/3105).
+See [#3105](https://github.com/chainpoint/tendermint/issues/3105).
 Note the Unix socket has neither encryption nor authentication, but will
-add a shared-secret in [#3099](https://github.com/tendermint/tendermint/issues/3099).
+add a shared-secret in [#3099](https://github.com/chainpoint/tendermint/issues/3099).
 
 ## v0.27.0
 
@@ -385,11 +385,11 @@ just the `Data` field set:
 
 For more information, see:
 
-- [ADR-026](https://github.com/tendermint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/docs/architecture/adr-026-general-merkle-proof.md)
+- [ADR-026](https://github.com/chainpoint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/docs/architecture/adr-026-general-merkle-proof.md)
 - [Relevant ABCI
-  documentation](https://github.com/tendermint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/docs/spec/abci/apps.md#query-proofs)
+  documentation](https://github.com/chainpoint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/docs/spec/abci/apps.md#query-proofs)
 - [Description of
-  keys](https://github.com/tendermint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/crypto/merkle/proof_key_path.go#L14)
+  keys](https://github.com/chainpoint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/crypto/merkle/proof_key_path.go#L14)
 
 ### Go API Changes
 
@@ -403,7 +403,7 @@ serialized before they are passed in.
 
 The `node.RunForever` function was removed. Signal handling and running forever
 should instead be explicitly configured by the caller. See how we do it
-[here](https://github.com/tendermint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/cmd/tendermint/commands/run_node.go#L60).
+[here](https://github.com/chainpoint/tendermint/blob/30519e8361c19f4bf320ef4d26288ebc621ad725/cmd/tendermint/commands/run_node.go#L60).
 
 ### Other
 

@@ -11,7 +11,7 @@ module.exports = {
   // },
   base: process.env.VUEPRESS_BASE,
   themeConfig: {
-    docsRepo: "tendermint/tendermint",
+    docsRepo: "chainpoint/tendermint",
     editLinks: true,
     docsDir: "docs",
     logo: "/logo.svg",
@@ -107,11 +107,11 @@ module.exports = {
           children: [
             {
               title: "Contributing to the docs",
-              url: "https://github.com/tendermint/tendermint"
+              url: "https://github.com/chainpoint/tendermint"
             },
             {
               title: "Source code on GitHub",
-              url: "https://github.com/tendermint/tendermint"
+              url: "https://github.com/chainpoint/tendermint"
             },
             {
               title: "Careers at Tendermint",

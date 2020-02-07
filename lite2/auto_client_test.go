@@ -9,10 +9,10 @@ import (
 
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/tendermint/tendermint/libs/log"
-	mockp "github.com/tendermint/tendermint/lite2/provider/mock"
-	dbs "github.com/tendermint/tendermint/lite2/store/db"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/libs/log"
+	mockp "github.com/chainpoint/tendermint/lite2/provider/mock"
+	dbs "github.com/chainpoint/tendermint/lite2/store/db"
+	"github.com/chainpoint/tendermint/types"
 )
 
 func TestAutoClient(t *testing.T) {

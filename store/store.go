@@ -9,7 +9,7 @@ import (
 
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/types"
 )
 
 /*

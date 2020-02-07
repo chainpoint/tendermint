@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/tendermint/tendermint/libs/log"
-	tmmath "github.com/tendermint/tendermint/libs/math"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/libs/log"
+	tmmath "github.com/chainpoint/tendermint/libs/math"
+	tmrand "github.com/chainpoint/tendermint/libs/rand"
+	"github.com/chainpoint/tendermint/p2p"
 )
 
 func TestAddrBookPickAddress(t *testing.T) {

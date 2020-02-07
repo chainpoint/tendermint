@@ -7,8 +7,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/tendermint/tendermint/p2p"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // Events

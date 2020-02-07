@@ -5,12 +5,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/libs/log"
-	tmnet "github.com/tendermint/tendermint/libs/net"
-	tmos "github.com/tendermint/tendermint/libs/os"
+	"github.com/chainpoint/tendermint/crypto/ed25519"
+	"github.com/chainpoint/tendermint/libs/log"
+	tmnet "github.com/chainpoint/tendermint/libs/net"
+	tmos "github.com/chainpoint/tendermint/libs/os"
 
-	"github.com/tendermint/tendermint/privval"
+	"github.com/chainpoint/tendermint/privval"
 )
 
 func main() {

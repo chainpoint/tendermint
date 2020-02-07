@@ -2,18 +2,18 @@
 
 ## Supported tags and respective `Dockerfile` links
 
-DockerHub tags for official releases are [here](https://hub.docker.com/r/tendermint/tendermint/tags/). The "latest" tag will always point to the highest version number.
+DockerHub tags for official releases are [here](https://hub.docker.com/r/chainpoint/tendermint/tags/). The "latest" tag will always point to the highest version number.
 
-Official releases can be found [here](https://github.com/tendermint/tendermint/releases).
+Official releases can be found [here](https://github.com/chainpoint/tendermint/releases).
 
-The Dockerfile for tendermint is not expected to change in the near future. The master file used for all builds can be found [here](https://raw.githubusercontent.com/tendermint/tendermint/master/DOCKER/Dockerfile).
+The Dockerfile for tendermint is not expected to change in the near future. The master file used for all builds can be found [here](https://raw.githubusercontent.com/chainpoint/tendermint/master/DOCKER/Dockerfile).
 
-Respective versioned files can be found https://raw.githubusercontent.com/tendermint/tendermint/vX.XX.XX/DOCKER/Dockerfile (replace the Xs with the version number).
+Respective versioned files can be found https://raw.githubusercontent.com/chainpoint/tendermint/vX.XX.XX/DOCKER/Dockerfile (replace the Xs with the version number).
 
 ## Quick reference
 
 - **Where to get help:** https://tendermint.com/
-- **Where to file issues:** https://github.com/tendermint/tendermint/issues
+- **Where to file issues:** https://github.com/chainpoint/tendermint/issues
 - **Supported Docker versions:** [the latest release](https://github.com/moby/moby/releases) (down to 1.6 on a best-effort basis)
 
 ## Tendermint
@@ -31,13 +31,13 @@ To get started developing applications, see the [application developers guide](h
 A quick example of a built-in app and Tendermint core in one container.
 
 ```
-docker run -it --rm -v "/tmp:/tendermint" tendermint/tendermint init
-docker run -it --rm -v "/tmp:/tendermint" tendermint/tendermint node --proxy_app=kvstore
+docker run -it --rm -v "/tmp:/tendermint" chainpoint/tendermint init
+docker run -it --rm -v "/tmp:/tendermint" chainpoint/tendermint node --proxy_app=kvstore
 ```
 
 ## Local cluster
 
-To run a 4-node network, see the `Makefile` in the root of [the repo](https://github.com/tendermint/tendermint/blob/master/Makefile) and run:
+To run a 4-node network, see the `Makefile` in the root of [the repo](https://github.com/chainpoint/tendermint/blob/master/Makefile) and run:
 
 ```
 make build-linux
@@ -49,8 +49,8 @@ Note that this will build and use a different image than the ones provided here.
 
 ## License
 
-- Tendermint's license is [Apache 2.0](https://github.com/tendermint/tendermint/blob/master/LICENSE).
+- Tendermint's license is [Apache 2.0](https://github.com/chainpoint/tendermint/blob/master/LICENSE).
 
 ## Contributing
 
-Contributions are most welcome! See the [contributing file](https://github.com/tendermint/tendermint/blob/master/CONTRIBUTING.md) for more information.
+Contributions are most welcome! See the [contributing file](https://github.com/chainpoint/tendermint/blob/master/CONTRIBUTING.md) for more information.

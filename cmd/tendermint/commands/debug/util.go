@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	cfg "github.com/tendermint/tendermint/config"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
+	cfg "github.com/chainpoint/tendermint/config"
+	rpcclient "github.com/chainpoint/tendermint/rpc/client"
 )
 
 // dumpStatus gets node status state dump from the Tendermint RPC and writes it

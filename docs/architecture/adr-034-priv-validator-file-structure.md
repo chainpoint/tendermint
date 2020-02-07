@@ -6,14 +6,14 @@
 
 ## Context
 
-For now, the PrivValidator file `priv_validator.json` contains mutable and immutable parts. 
-Even in an insecure mode which does not encrypt private key on disk, it is reasonable to separate 
+For now, the PrivValidator file `priv_validator.json` contains mutable and immutable parts.
+Even in an insecure mode which does not encrypt private key on disk, it is reasonable to separate
 the mutable part and immutable part.
 
 References:
-[#1181](https://github.com/tendermint/tendermint/issues/1181)
-[#2657](https://github.com/tendermint/tendermint/issues/2657)
-[#2313](https://github.com/tendermint/tendermint/issues/2313)
+[#1181](https://github.com/chainpoint/tendermint/issues/1181)
+[#2657](https://github.com/chainpoint/tendermint/issues/2657)
+[#2313](https://github.com/chainpoint/tendermint/issues/2313)
 
 ## Proposed Solution
 
@@ -50,7 +50,7 @@ type FilePV struct {
 }
 ```
 
-As discussed, `FilePV` should be located in `config`, and `FilePVLastSignState` should be stored in `data`. The 
+As discussed, `FilePV` should be located in `config`, and `FilePVLastSignState` should be stored in `data`. The
 store path of each file should be specified in `config.yml`.
 
 What we need to do next is changing the methods of `FilePV`.

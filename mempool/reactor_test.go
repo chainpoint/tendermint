@@ -11,13 +11,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/tendermint/tendermint/abci/example/kvstore"
-	cfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/p2p"
-	"github.com/tendermint/tendermint/p2p/mock"
-	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/abci/example/kvstore"
+	cfg "github.com/chainpoint/tendermint/config"
+	"github.com/chainpoint/tendermint/libs/log"
+	"github.com/chainpoint/tendermint/p2p"
+	"github.com/chainpoint/tendermint/p2p/mock"
+	"github.com/chainpoint/tendermint/proxy"
+	"github.com/chainpoint/tendermint/types"
 )
 
 type peerState struct {

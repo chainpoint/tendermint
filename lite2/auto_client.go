@@ -3,7 +3,7 @@ package lite
 import (
 	"time"
 
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // AutoClient can auto update itself by fetching headers every N seconds.

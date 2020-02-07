@@ -6,10 +6,10 @@ import (
 	"strconv"
 
 	amino "github.com/tendermint/go-amino"
-	cryptoamino "github.com/tendermint/tendermint/crypto/encoding/amino"
-	log "github.com/tendermint/tendermint/libs/log"
-	lerr "github.com/tendermint/tendermint/lite/errors"
-	"github.com/tendermint/tendermint/types"
+	cryptoamino "github.com/chainpoint/tendermint/crypto/encoding/amino"
+	log "github.com/chainpoint/tendermint/libs/log"
+	lerr "github.com/chainpoint/tendermint/lite/errors"
+	"github.com/chainpoint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
 

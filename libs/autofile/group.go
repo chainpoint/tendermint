@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tendermint/tendermint/libs/service"
+	"github.com/chainpoint/tendermint/libs/service"
 )
 
 const (

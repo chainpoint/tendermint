@@ -11,11 +11,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	tmmath "github.com/tendermint/tendermint/libs/math"
-	tmrand "github.com/tendermint/tendermint/libs/rand"
-	tmtime "github.com/tendermint/tendermint/types/time"
+	"github.com/chainpoint/tendermint/crypto"
+	"github.com/chainpoint/tendermint/crypto/ed25519"
+	tmmath "github.com/chainpoint/tendermint/libs/math"
+	tmrand "github.com/chainpoint/tendermint/libs/rand"
+	tmtime "github.com/chainpoint/tendermint/types/time"
 )
 
 func TestValidatorSetBasic(t *testing.T) {

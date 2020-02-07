@@ -62,10 +62,10 @@ gopath-setup:
 
 build-tendermint: git-branch gopath-setup
 	@echo "*** Building tendermint"
-	go get -d -u github.com/tendermint/tendermint/cmd/tendermint
-	cd $(GOPATH)/src/github.com/tendermint/tendermint && git checkout "$(GIT_BRANCH)" && git pull
-	export PATH=$(GOPATH)/bin:$(PATH) && $(MAKE) -C $(GOPATH)/src/github.com/tendermint/tendermint tools build
-	cp $(GOPATH)/src/github.com/tendermint/tendermint/build/tendermint $(GOPATH)/bin
+	go get -d -u github.com/chainpoint/tendermint/cmd/tendermint
+	cd $(GOPATH)/src/github.com/chainpoint/tendermint && git checkout "$(GIT_BRANCH)" && git pull
+	export PATH=$(GOPATH)/bin:$(PATH) && $(MAKE) -C $(GOPATH)/src/github.com/chainpoint/tendermint tools build
+	cp $(GOPATH)/src/github.com/chainpoint/tendermint/build/tendermint $(GOPATH)/bin
 	@echo "*** Built tendermint"
 
 build-ethermint: git-branch gopath-setup
@@ -216,7 +216,7 @@ install-deb-%: version-%
 	cp RPMS/$*-$($*_version)-$(BUILD_NUMBER)_amd64.deb tmp/debian-s3/pool
 	cp ./Release_amd64 tmp/debian-s3/dists/stable/main/binary-amd64/Release
 
-	#Packages / Packages.gz	
+	#Packages / Packages.gz
 
 	echo > tmp/Package
 	echo "Filename: pool/$*-$($*_version)-$(BUILD_NUMBER)_amd64.deb" >> tmp/Package
@@ -277,9 +277,9 @@ clean: mostlyclean
 	rm -rf {BUILD,RPMS}
 
 distclean: clean
-	rm -rf $(GOPATH)/src/github.com/tendermint/tendermint
+	rm -rf $(GOPATH)/src/github.com/chainpoint/tendermint
 	rm -rf $(GOPATH)/src/github.com/cosmos/cosmos-sdk
-	rm -rf $(GOPATH)/src/github.com/tendermint/ethermint 
+	rm -rf $(GOPATH)/src/github.com/tendermint/ethermint
 	rm -rf $(GOPATH)/bin/tendermint
 	rm -rf $(GOPATH)/bin/basecoind
 	rm -rf $(GOPATH)/bin/ethermint

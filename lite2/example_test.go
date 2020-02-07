@@ -12,11 +12,11 @@ import (
 
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/tendermint/tendermint/abci/example/kvstore"
-	"github.com/tendermint/tendermint/libs/log"
-	httpp "github.com/tendermint/tendermint/lite2/provider/http"
-	dbs "github.com/tendermint/tendermint/lite2/store/db"
-	rpctest "github.com/tendermint/tendermint/rpc/test"
+	"github.com/chainpoint/tendermint/abci/example/kvstore"
+	"github.com/chainpoint/tendermint/libs/log"
+	httpp "github.com/chainpoint/tendermint/lite2/provider/http"
+	dbs "github.com/chainpoint/tendermint/lite2/store/db"
+	rpctest "github.com/chainpoint/tendermint/rpc/test"
 )
 
 func TestExample_Client(t *testing.T) {

@@ -9,14 +9,14 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/tendermint/tendermint/crypto/merkle"
-	tmbytes "github.com/tendermint/tendermint/libs/bytes"
-	service "github.com/tendermint/tendermint/libs/service"
-	lite "github.com/tendermint/tendermint/lite2"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/crypto/merkle"
+	tmbytes "github.com/chainpoint/tendermint/libs/bytes"
+	service "github.com/chainpoint/tendermint/libs/service"
+	lite "github.com/chainpoint/tendermint/lite2"
+	rpcclient "github.com/chainpoint/tendermint/rpc/client"
+	ctypes "github.com/chainpoint/tendermint/rpc/core/types"
+	rpctypes "github.com/chainpoint/tendermint/rpc/lib/types"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // Client is an RPC client, which uses lite#Client to verify data (if it can be

@@ -1,6 +1,6 @@
 package provider
 
-import "github.com/tendermint/tendermint/types"
+import "github.com/chainpoint/tendermint/types"
 
 // Provider provides information for the lite client to sync (verification
 // happens in the client).

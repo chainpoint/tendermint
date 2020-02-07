@@ -32,8 +32,8 @@ echo export GO111MODULE=on >> ~/.bash_profile
 Then run
 
 ```
-go get github.com/tendermint/tendermint
-cd $GOPATH/src/github.com/tendermint/tendermint
+go get github.com/chainpoint/tendermint
+cd $GOPATH/src/github.com/chainpoint/tendermint
 make tools
 make install_abci
 ```
@@ -58,9 +58,9 @@ Let's start a kvstore application.
 abci-cli kvstore
 ```
 
-In another terminal, we can start Tendermint. You should already have the 
-Tendermint binary installed. If not, follow the steps from 
-[here](../introduction/install.md). If you have never run Tendermint 
+In another terminal, we can start Tendermint. You should already have the
+Tendermint binary installed. If not, follow the steps from
+[here](../introduction/install.md). If you have never run Tendermint
 before, use:
 
 ```
@@ -148,7 +148,7 @@ of the ASCII of `abcd`. You can verify this in a python 2 shell by
 running `"YWJjZA==".decode('base64')` or in python 3 shell by running
 `import codecs; codecs.decode(b"YWJjZA==", 'base64').decode('ascii')`.
 Stay tuned for a future release that [makes this output more
-human-readable](https://github.com/tendermint/tendermint/issues/1794).
+human-readable](https://github.com/chainpoint/tendermint/issues/1794).
 
 Now let's try setting a different key and value:
 

@@ -10,8 +10,8 @@ import (
 
 	amino "github.com/tendermint/go-amino"
 
-	"github.com/tendermint/tendermint/libs/log"
-	types "github.com/tendermint/tendermint/rpc/lib/types"
+	"github.com/chainpoint/tendermint/libs/log"
+	types "github.com/chainpoint/tendermint/rpc/lib/types"
 )
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -3,9 +3,9 @@ package http
 import (
 	"fmt"
 
-	"github.com/tendermint/tendermint/lite2/provider"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/lite2/provider"
+	rpcclient "github.com/chainpoint/tendermint/rpc/client"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // SignStatusClient combines a SignClient and StatusClient.

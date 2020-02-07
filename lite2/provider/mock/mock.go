@@ -3,8 +3,8 @@ package mock
 import (
 	"github.com/pkg/errors"
 
-	"github.com/tendermint/tendermint/lite2/provider"
-	"github.com/tendermint/tendermint/types"
+	"github.com/chainpoint/tendermint/lite2/provider"
+	"github.com/chainpoint/tendermint/types"
 )
 
 // mock provider allows to directly set headers & vals, which can be handy when

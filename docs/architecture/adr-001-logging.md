@@ -4,7 +4,7 @@
 
 Current logging system in Tendermint is very static and not flexible enough.
 
-Issues: [358](https://github.com/tendermint/tendermint/issues/358), [375](https://github.com/tendermint/tendermint/issues/375).
+Issues: [358](https://github.com/chainpoint/tendermint/issues/358), [375](https://github.com/chainpoint/tendermint/issues/375).
 
 What we want from the new system:
 
@@ -43,7 +43,7 @@ have some in `tmlibs/common`.
 
 `Notice` should become `Info`, `Warn` either `Error` or `Debug` depending on the message, `Crit` -> `Error`.
 
-This interface should go into `tmlibs/log`. All libraries which are part of the core (tendermint/tendermint) should obey it.
+This interface should go into `tmlibs/log`. All libraries which are part of the core (chainpoint/tendermint) should obey it.
 
 ### 2) Logger with our current formatting
 
